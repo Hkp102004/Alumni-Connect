@@ -1,0 +1,87 @@
+.opportunities {
+  padding: 20px 48px 80px;
+}
+
+.opportunities__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.opportunities__title {
+  font-size: 1.9rem;
+  margin: 0 0 8px;
+}
+
+.opportunities__subtitle {
+  margin: 0;
+}
+
+.opportunities__tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.opportunities__form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.opportunities__form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.opportunities__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.opportunities__card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.opportunities__type {
+  align-self: flex-start;
+  text-transform: capitalize;
+}
+
+.opportunities__name {
+  margin: 4px 0 0;
+  font-size: 1.05rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+}
+
+.opportunities__desc {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin: 4px 0 0;
+}
+
+.opportunities__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .opportunities {
+    padding: 20px 20px 60px;
+  }
+  .opportunities__form-row {
+    grid-template-columns: 1fr;
+  }
+}

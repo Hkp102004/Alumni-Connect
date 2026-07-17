@@ -1,0 +1,113 @@
+.mentorship {
+  padding: 20px 48px 80px;
+}
+
+.mentorship__title {
+  font-size: 1.9rem;
+  margin: 0 0 8px;
+}
+
+.mentorship__subtitle {
+  margin: 0 0 28px;
+}
+
+.mentorship__tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.mentorship__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.mentorship__card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mentorship__name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+}
+
+.mentorship__bio {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.mentorship__tags {
+  margin-bottom: 6px;
+}
+
+.mentorship__request-btn {
+  margin-top: 8px;
+  width: 100%;
+}
+
+.mentorship__status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mentorship__status {
+  text-transform: capitalize;
+  flex-shrink: 0;
+}
+
+.mentorship__status--active {
+  background: rgba(91, 217, 143, 0.14);
+  border-color: rgba(91, 217, 143, 0.4);
+  color: #a8f0c6;
+}
+
+.mentorship__status--declined {
+  background: rgba(217, 91, 91, 0.14);
+  border-color: rgba(217, 91, 91, 0.4);
+  color: #f5a3a3;
+}
+
+.mentorship__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.mentorship__modal {
+  width: 100%;
+  max-width: 440px;
+}
+
+.mentorship__modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.mentorship__modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+@media (max-width: 768px) {
+  .mentorship {
+    padding: 20px 20px 60px;
+  }
+}

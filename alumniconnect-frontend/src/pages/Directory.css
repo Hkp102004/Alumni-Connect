@@ -1,0 +1,89 @@
+.directory {
+  padding: 20px 48px 80px;
+}
+
+.directory__title {
+  font-size: 1.9rem;
+  margin: 0 0 8px;
+}
+
+.directory__subtitle {
+  margin: 0 0 32px;
+}
+
+.directory__filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.directory__filters input[name='search'] {
+  flex: 2;
+  min-width: 220px;
+}
+
+.directory__select {
+  flex: 1;
+  min-width: 130px;
+}
+
+.directory__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.directory__card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.directory__card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.directory__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #4a76b8 0%, #2c4266 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  box-shadow: 0 0 14px var(--blue-glow);
+}
+
+.directory__name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+}
+
+.directory__role {
+  font-size: 0.82rem;
+}
+
+.directory__bio {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.directory__tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .directory {
+    padding: 20px 20px 60px;
+  }
+}
