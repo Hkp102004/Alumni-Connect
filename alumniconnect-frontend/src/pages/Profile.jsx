@@ -3,23 +3,34 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
 import './Profile.css';
 
+const DEFAULT_BANNER =
+  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1400&q=80&auto=format&fit=crop';
+const DEFAULT_AVATAR = 'https://ui-avatars.com/api/?background=0052cc&color=fff&size=128&bold=true&name=';
+
 export default function Profile() {
   const { user, setUser } = useAuth();
+
   const [form, setForm] = useState({
-    name: user?.name || '',
-    company: user?.company || '',
-    designation: user?.designation || '',
-    location: user?.location || '',
-    bio: user?.bio || '',
-    skills: (user?.skills || []).join(', '),
-    avatarUrl: user?.avatarUrl || '',
-    linkedinUrl: user?.linkedinUrl || '',
-    githubUrl: user?.githubUrl || '',
-    isMentor: user?.isMentor || false,
+    name:            user?.name             || '',
+    role:            user?.role             || 'student',
+    batch:           user?.batch            || '',
+    branch:          user?.branch           || '',
+    company:         user?.company          || '',
+    designation:     user?.designation      || '',
+    location:        user?.location         || '',
+    bio:             user?.bio              || '',
+    skills:          (user?.skills          || []).join(', '),
+    avatarUrl:       user?.avatarUrl        || '',
+    linkedinUrl:     user?.linkedinUrl      || '',
+    githubUrl:       user?.githubUrl        || '',
+    isMentor:        user?.isMentor         || false,
     mentorExpertise: (user?.mentorExpertise || []).join(', '),
   });
-  const [saved, setSaved] = useState(false);
-  const [saving, setSaving] = useState(false);
+
+  const [saved,          setSaved]         = useState(false);
+  const [saving,         setSaving]        = useState(false);
+  const [error,          setError]         = useState('');
+  const [activeSection,  setActiveSection] = useState('overview');
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -30,17 +41,29 @@ export default function Profile() {
     e.preventDefault();
     setSaving(true);
     setSaved(false);
+    setError('');
+
+    if (form.isMentor && !form.mentorExpertise.trim()) {
+      setError('Please add your mentorship areas of expertise.');
+      setSaving(false);
+      return;
+    }
+
     try {
       const payload = {
         ...form,
-        skills: form.skills.split(',').map((s) => s.trim()).filter(Boolean),
+        skills:          form.skills.split(',').map((s) => s.trim()).filter(Boolean),
         mentorExpertise: form.mentorExpertise.split(',').map((s) => s.trim()).filter(Boolean),
       };
+      delete payload.role;
+
       const res = await api.put('/users/me', payload);
       setUser(res.data);
       setSaved(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       console.error(err);
+      setError(err.response?.data?.message || 'Could not save profile.');
     } finally {
       setSaving(false);
     }
@@ -48,95 +71,395 @@ export default function Profile() {
 
   if (!user) return null;
 
+  /* ── Completeness ── */
+  const requiredFields = [
+    { key: 'name',     label: 'Full Name'  },
+    { key: 'batch',    label: 'Batch'      },
+    { key: 'branch',   label: 'Branch'     },
+    { key: 'location', label: 'Location'   },
+    { key: 'bio',      label: 'Bio'        },
+    { key: 'skills',   label: 'Skills'     },
+  ];
+  if (user.role === 'alumni') {
+    requiredFields.push({ key: 'company',     label: 'Company'     });
+    requiredFields.push({ key: 'designation', label: 'Designation' });
+  }
+  const missingFields     = requiredFields.filter(f => !String(form[f.key] || '').trim());
+  const isComplete        = missingFields.length === 0;
+  const completenessPercent = Math.round(((requiredFields.length - missingFields.length) / requiredFields.length) * 100);
+
+  const avatarSrc   = form.avatarUrl || `${DEFAULT_AVATAR}${encodeURIComponent(form.name || 'U')}`;
+  const skillsArray = form.skills.split(',').map(s => s.trim()).filter(Boolean);
+
+  const navItems = [
+    { id: 'overview',     label: 'Overview'       },
+    { id: 'education',    label: 'Education'       },
+    { id: 'professional', label: 'Professional'    },
+    { id: 'links',        label: 'Links & Skills'  },
+    ...(user.role === 'alumni' ? [{ id: 'mentorship', label: 'Mentorship' }] : []),
+  ];
+
+  /* Save button shared across sections */
+  const SaveBtn = () => (
+    <div className="profile-form-actions">
+      <button type="submit" className="profile-save-btn" disabled={saving}>
+        {saving
+          ? <><span className="profile-spinner" />Saving…</>
+          : 'Save Changes'}
+      </button>
+    </div>
+  );
+
   return (
-    <div className="profile">
-      <h1 className="font-display glow-text profile__title">YOUR PROFILE</h1>
-      <p className="text-dim profile__subtitle">
-        {user.role === 'alumni' ? 'Alumni' : 'Student'} · {user.email}
-      </p>
+    <div className="profile-page">
 
-      <form className="card profile__form" onSubmit={handleSubmit}>
-        <div className="profile__row">
-          <label className="text-faint">Name</label>
-          <input className="input-field" name="name" value={form.name} onChange={handleChange} required />
-        </div>
+      {/* ── Banner ── */}
+      <div className="profile-banner">
+        <img src={DEFAULT_BANNER} alt="Profile banner" className="profile-banner__img" />
+        <div className="profile-banner__overlay" />
+      </div>
 
-        <div className="profile__row">
-          <label className="text-faint">Profile Picture URL</label>
-          <input className="input-field" name="avatarUrl" placeholder="https://unsplash.com/... or leave blank" value={form.avatarUrl} onChange={handleChange} />
-        </div>
+      {/* ── Body ── */}
+      <div className="profile-body">
 
-        <div className="profile__row-double">
-          <div className="profile__row">
-            <label className="text-faint">Company</label>
-            <input className="input-field" name="company" value={form.company} onChange={handleChange} />
+        {/* ── LEFT SIDEBAR ── */}
+        <aside className="profile-sidebar">
+
+          {/* Avatar (above card, overlapping banner) */}
+          <div className="profile-sidebar__avatar-wrap">
+            <img src={avatarSrc} alt={form.name} className="profile-sidebar__avatar" />
           </div>
-          <div className="profile__row">
-            <label className="text-faint">Designation</label>
-            <input className="input-field" name="designation" value={form.designation} onChange={handleChange} />
-          </div>
-        </div>
 
-        <div className="profile__row-double">
-          <div className="profile__row">
-            <label className="text-faint">LinkedIn URL</label>
-            <input className="input-field" name="linkedinUrl" placeholder="https://linkedin.com/in/..." value={form.linkedinUrl} onChange={handleChange} />
-          </div>
-          <div className="profile__row">
-            <label className="text-faint">GitHub URL</label>
-            <input className="input-field" name="githubUrl" placeholder="https://github.com/..." value={form.githubUrl} onChange={handleChange} />
-          </div>
-        </div>
+          {/* White card */}
+          <div className="profile-sidebar__card">
+            <div className="profile-sidebar__name">{form.name || 'Your Name'}</div>
+            <div className="profile-sidebar__role-badge">
+              {form.role === 'alumni' ? '🎓 Alumni' : '📚 Student'}
+            </div>
 
-        <div className="profile__row">
-          <label className="text-faint">Location</label>
-          <input className="input-field" name="location" value={form.location} onChange={handleChange} />
-        </div>
+            {/* Status pill */}
+            <span className={`profile-sidebar__status profile-sidebar__status--${isComplete ? 'ok' : 'warn'}`}>
+              <span className="profile-sidebar__status-dot" />
+              {isComplete ? 'Listed in Directory' : `${completenessPercent}% complete`}
+            </span>
 
-        <div className="profile__row">
-          <label className="text-faint">Bio</label>
-          <textarea
-            className="input-field profile__textarea"
-            name="bio"
-            value={form.bio}
-            onChange={handleChange}
-            maxLength={500}
-            rows={4}
-          />
-        </div>
+            {/* Toasts */}
+            {saved && (
+              <div className="profile-sidebar__toast profile-sidebar__toast--ok">✓ Saved successfully!</div>
+            )}
+            {error && (
+              <div className="profile-sidebar__toast profile-sidebar__toast--err">⚠ {error}</div>
+            )}
 
-        <div className="profile__row">
-          <label className="text-faint">Skills (comma separated)</label>
-          <input className="input-field" name="skills" value={form.skills} onChange={handleChange} />
-        </div>
+            <div className="profile-sidebar__divider" />
 
-        {user.role === 'alumni' && (
-          <>
-            <label className="profile__checkbox">
-              <input type="checkbox" name="isMentor" checked={form.isMentor} onChange={handleChange} />
-              <span>Available as a mentor</span>
-            </label>
+            {/* About */}
+            <div className="profile-sidebar__section-label">ABOUT</div>
+            <ul className="profile-sidebar__info-list">
+              <li>
+                <span className="profile-sidebar__info-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="15" height="15"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                </span>
+                <span className="profile-sidebar__info-text">{form.designation || 'Your designation'}</span>
+              </li>
+              <li>
+                <span className="profile-sidebar__info-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="15" height="15"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </span>
+                <span className="profile-sidebar__info-text">{form.company || 'Your organization'}</span>
+              </li>
+              <li>
+                <span className="profile-sidebar__info-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="15" height="15"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.09 6.09l1.27-.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                </span>
+                <span className="profile-sidebar__info-text">{form.branch || 'Your department'}</span>
+              </li>
+              <li>
+                <span className="profile-sidebar__info-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="15" height="15"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </span>
+                <span className="profile-sidebar__info-text">{form.location || 'Your location'}</span>
+              </li>
+              <li>
+                <span className="profile-sidebar__info-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="15" height="15"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </span>
+                <span className="profile-sidebar__info-text">Batch {form.batch || '—'}</span>
+              </li>
+            </ul>
+
+            <div className="profile-sidebar__divider" />
+
+            {/* Contact */}
+            <div className="profile-sidebar__section-label">CONTACT</div>
+            <ul className="profile-sidebar__info-list">
+              <li>
+                <span className="profile-sidebar__info-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="15" height="15"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </span>
+                <span className="profile-sidebar__info-text">{user?.email}</span>
+              </li>
+              {form.linkedinUrl && (
+                <li>
+                  <span className="profile-sidebar__info-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="15" height="15"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+                  </span>
+                  <a href={form.linkedinUrl} target="_blank" rel="noreferrer" className="profile-sidebar__info-link">LinkedIn</a>
+                </li>
+              )}
+              {form.githubUrl && (
+                <li>
+                  <span className="profile-sidebar__info-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="15" height="15"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                  </span>
+                  <a href={form.githubUrl} target="_blank" rel="noreferrer" className="profile-sidebar__info-link">GitHub</a>
+                </li>
+              )}
+            </ul>
 
             {form.isMentor && (
-              <div className="profile__row">
-                <label className="text-faint">Mentorship areas (comma separated)</label>
-                <input
-                  className="input-field"
-                  name="mentorExpertise"
-                  value={form.mentorExpertise}
-                  onChange={handleChange}
-                  placeholder="e.g. Web Development, Product Management"
-                />
+              <>
+                <div className="profile-sidebar__divider" />
+                <span className="profile-sidebar__mentor-badge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  Available as Mentor
+                </span>
+              </>
+            )}
+          </div>
+        </aside>
+
+        {/* ── MAIN CONTENT ── */}
+        <main className="profile-main">
+
+          {/* Completeness warning */}
+          {!isComplete && (
+            <div className="profile-completeness-banner">
+              <div className="profile-completeness-banner__info">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="17" height="17" style={{ flexShrink: 0, marginTop: 1 }}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <div>
+                  <strong>Profile {completenessPercent}% complete</strong> — Fill in missing fields to appear in the directory.
+                  <div className="profile-completeness-banner__missing">
+                    Missing: {missingFields.map(f => f.label).join(' · ')}
+                  </div>
+                </div>
+              </div>
+              <div className="profile-completeness-banner__bar">
+                <div className="profile-completeness-banner__fill" style={{ width: `${completenessPercent}%` }} />
+              </div>
+            </div>
+          )}
+
+          {/* Nav tabs */}
+          <nav className="profile-nav">
+            {navItems.map(item => (
+              <button
+                key={item.id}
+                type="button"
+                className={`profile-nav__tab${activeSection === item.id ? ' profile-nav__tab--active' : ''}`}
+                onClick={() => setActiveSection(item.id)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="profile-form-wrap">
+
+            {/* ── OVERVIEW ── */}
+            {activeSection === 'overview' && (
+              <div className="profile-section">
+                <div className="profile-section__head">
+                  <h2 className="profile-section__title">Overview</h2>
+                  <p className="profile-section__sub">Your public-facing summary shown in the directory.</p>
+                </div>
+
+                <div className="profile-field">
+                  <label className="profile-label">Full Name</label>
+                  <input className="profile-input" name="name" value={form.name} onChange={handleChange} placeholder="e.g. Priya Sharma" required />
+                </div>
+
+                <div className="profile-field">
+                  <label className="profile-label">Bio / Introduction</label>
+                  <textarea className="profile-input profile-textarea" name="bio" value={form.bio} onChange={handleChange} placeholder="Write a short introduction about yourself…" rows={4} maxLength={500} required />
+                  <span className="profile-char-count">{500 - (form.bio?.length || 0)} characters remaining</span>
+                </div>
+
+                <div className="profile-field">
+                  <label className="profile-label">Profile Photo URL <span className="profile-label__opt">(optional)</span></label>
+                  <input className="profile-input" name="avatarUrl" value={form.avatarUrl} onChange={handleChange} placeholder="https://example.com/your-photo.jpg" />
+                  <span className="profile-help">Leave blank to use an auto-generated avatar from your name.</span>
+                </div>
+
+                <div className="profile-field profile-field--readonly">
+                  <label className="profile-label">Account Role</label>
+                  <div className="profile-readonly-pill">{form.role === 'alumni' ? '🎓 Alumni' : '📚 Student'}</div>
+                  <span className="profile-help">Role is locked after registration.</span>
+                </div>
+
+                {skillsArray.length > 0 && (
+                  <div className="profile-skills-preview">
+                    <label className="profile-label">Your Skills</label>
+                    <div className="profile-skills-preview__tags">
+                      {skillsArray.map((sk, i) => <span key={i} className="profile-skill-tag">{sk}</span>)}
+                    </div>
+                  </div>
+                )}
+
+                <SaveBtn />
               </div>
             )}
-          </>
-        )}
 
-        <button className="btn-primary profile__submit" type="submit" disabled={saving}>
-          {saving ? 'Saving...' : 'Save changes'}
-        </button>
-        {saved && <p className="glow-text-blue profile__saved">Profile updated.</p>}
-      </form>
+            {/* ── EDUCATION ── */}
+            {activeSection === 'education' && (
+              <div className="profile-section">
+                <div className="profile-section__head">
+                  <h2 className="profile-section__title">Education Details</h2>
+                  <p className="profile-section__sub">Helps connect you with alumni and peers from the same batch.</p>
+                </div>
+
+                <div className="profile-field-row">
+                  <div className="profile-field">
+                    <label className="profile-label">Graduation Batch <span className="profile-label__req">*</span></label>
+                    <input className="profile-input" name="batch" value={form.batch} onChange={handleChange} placeholder="e.g. 2024" required />
+                  </div>
+                  <div className="profile-field">
+                    <label className="profile-label">Branch / Department <span className="profile-label__req">*</span></label>
+                    <input className="profile-input" name="branch" value={form.branch} onChange={handleChange} placeholder="e.g. Computer Science" required />
+                  </div>
+                </div>
+
+                <SaveBtn />
+              </div>
+            )}
+
+            {/* ── PROFESSIONAL ── */}
+            {activeSection === 'professional' && (
+              <div className="profile-section">
+                <div className="profile-section__head">
+                  <h2 className="profile-section__title">Professional Details</h2>
+                  <p className="profile-section__sub">
+                    {user.role === 'alumni'
+                      ? 'Required for alumni to be listed in the directory.'
+                      : 'Optional for students — add if you are interning or working.'}
+                  </p>
+                </div>
+
+                <div className="profile-field-row">
+                  <div className="profile-field">
+                    <label className="profile-label">
+                      Company / Organization
+                      {user.role === 'alumni' && <span className="profile-label__req"> *</span>}
+                    </label>
+                    <input className="profile-input" name="company" value={form.company} onChange={handleChange} placeholder="e.g. Google, Amazon" required={user.role === 'alumni'} />
+                  </div>
+                  <div className="profile-field">
+                    <label className="profile-label">
+                      Designation / Job Role
+                      {user.role === 'alumni' && <span className="profile-label__req"> *</span>}
+                    </label>
+                    <input className="profile-input" name="designation" value={form.designation} onChange={handleChange} placeholder="e.g. Senior Software Engineer" required={user.role === 'alumni'} />
+                  </div>
+                </div>
+
+                <div className="profile-field">
+                  <label className="profile-label">Current Location <span className="profile-label__req">*</span></label>
+                  <input className="profile-input" name="location" value={form.location} onChange={handleChange} placeholder="e.g. Bangalore, India" required />
+                </div>
+
+                <SaveBtn />
+              </div>
+            )}
+
+            {/* ── LINKS & SKILLS ── */}
+            {activeSection === 'links' && (
+              <div className="profile-section">
+                <div className="profile-section__head">
+                  <h2 className="profile-section__title">Links & Skills</h2>
+                  <p className="profile-section__sub">Help others discover and connect with you.</p>
+                </div>
+
+                <div className="profile-field-row">
+                  <div className="profile-field">
+                    <label className="profile-label">LinkedIn URL <span className="profile-label__opt">(optional)</span></label>
+                    <input className="profile-input" name="linkedinUrl" value={form.linkedinUrl} onChange={handleChange} placeholder="https://linkedin.com/in/username" />
+                  </div>
+                  <div className="profile-field">
+                    <label className="profile-label">GitHub URL <span className="profile-label__opt">(optional)</span></label>
+                    <input className="profile-input" name="githubUrl" value={form.githubUrl} onChange={handleChange} placeholder="https://github.com/username" />
+                  </div>
+                </div>
+
+                <div className="profile-field">
+                  <label className="profile-label">Skills <span className="profile-label__req">*</span></label>
+                  <input className="profile-input" name="skills" value={form.skills} onChange={handleChange} placeholder="React, Node.js, Python, System Design" required />
+                  <span className="profile-help">Comma-separated — these appear as tags on your directory card.</span>
+                </div>
+
+                {skillsArray.length > 0 && (
+                  <div className="profile-skills-preview">
+                    <label className="profile-label">Preview</label>
+                    <div className="profile-skills-preview__tags">
+                      {skillsArray.map((sk, i) => <span key={i} className="profile-skill-tag">{sk}</span>)}
+                    </div>
+                  </div>
+                )}
+
+                <SaveBtn />
+              </div>
+            )}
+
+            {/* ── MENTORSHIP (Alumni only) ── */}
+            {activeSection === 'mentorship' && user.role === 'alumni' && (
+              <div className="profile-section">
+                <div className="profile-section__head">
+                  <h2 className="profile-section__title">Mentorship Settings</h2>
+                  <p className="profile-section__sub">Opt-in to guide current students as a mentor.</p>
+                </div>
+
+                {/* Toggle using JS-driven class */}
+                <label className={`profile-toggle${form.isMentor ? ' profile-toggle--active' : ''}`}>
+                  <input
+                    type="checkbox"
+                    name="isMentor"
+                    checked={form.isMentor}
+                    onChange={handleChange}
+                    className="profile-toggle__input"
+                  />
+                  <div className="profile-toggle__track">
+                    <div className="profile-toggle__thumb" />
+                  </div>
+                  <div className="profile-toggle__label">
+                    <span className="profile-toggle__title">Available as Mentor</span>
+                    <span className="profile-toggle__desc">
+                      Your profile will appear in the Mentorship section so students can request sessions.
+                    </span>
+                  </div>
+                </label>
+
+                {form.isMentor && (
+                  <div className="profile-field" style={{ marginTop: '20px' }}>
+                    <label className="profile-label">Areas of Expertise <span className="profile-label__req">*</span></label>
+                    <input
+                      className="profile-input"
+                      name="mentorExpertise"
+                      value={form.mentorExpertise}
+                      onChange={handleChange}
+                      placeholder="Career Coaching, System Design, Resume Review"
+                      required
+                    />
+                    <span className="profile-help">Comma-separated — students will see this when browsing mentors.</span>
+                  </div>
+                )}
+
+                <SaveBtn />
+              </div>
+            )}
+
+          </form>
+        </main>
+      </div>
     </div>
   );
 }

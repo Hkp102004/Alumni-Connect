@@ -1,24 +1,50 @@
 const User = require('../models/User');
 
 // @route  GET /api/users
-// @desc   Alumni directory search with filters: ?batch=&branch=&company=&skills=&role=&search=
+// @desc   Alumni directory search with filters (only lists users with complete profiles)
 const getUsers = async (req, res) => {
   try {
     const { batch, branch, company, skills, role, search } = req.query;
-    const filter = {};
+    
+    // Core profile completeness conditions: name, batch, branch, bio, location, skills
+    const queryConditions = [
+      { name: { $exists: true, $ne: '' } },
+      { batch: { $exists: true, $ne: '' } },
+      { branch: { $exists: true, $ne: '' } },
+      { bio: { $exists: true, $ne: '' } },
+      { location: { $exists: true, $ne: '' } },
+      { skills: { $exists: true, $not: { $size: 0 } } },
+      {
+        $or: [
+          { role: 'student' },
+          {
+            role: 'alumni',
+            company: { $exists: true, $ne: '' },
+            designation: { $exists: true, $ne: '' }
+          }
+        ]
+      }
+    ];
 
-    if (batch) filter.batch = batch;
-    if (branch) filter.branch = branch;
-    if (company) filter.company = new RegExp(company, 'i');
-    if (role) filter.role = role;
-    if (skills) filter.skills = { $in: skills.split(',').map((s) => s.trim()) };
+    if (batch) queryConditions.push({ batch });
+    if (branch) queryConditions.push({ branch });
+    if (company) queryConditions.push({ company: new RegExp(company, 'i') });
+    if (role) queryConditions.push({ role });
+    if (skills) {
+      queryConditions.push({
+        skills: { $in: skills.split(',').map((s) => s.trim()).filter(Boolean) }
+      });
+    }
     if (search) {
-      filter.$or = [
-        { name: new RegExp(search, 'i') },
-        { bio: new RegExp(search, 'i') },
-      ];
+      queryConditions.push({
+        $or: [
+          { name: new RegExp(search, 'i') },
+          { bio: new RegExp(search, 'i') },
+        ]
+      });
     }
 
+    const filter = { $and: queryConditions };
     const users = await User.find(filter).select('-password').sort({ createdAt: -1 });
     res.json(users);
   } catch (error) {
@@ -27,13 +53,30 @@ const getUsers = async (req, res) => {
 };
 
 // @route  GET /api/users/mentors
-// @desc   List all users who opted in as mentors, optional ?expertise=
+// @desc   List all users who opted in as mentors (only lists mentors with complete profiles)
 const getMentors = async (req, res) => {
   try {
     const { expertise } = req.query;
-    const filter = { isMentor: true };
-    if (expertise) filter.mentorExpertise = { $in: [new RegExp(expertise, 'i')] };
+    
+    const queryConditions = [
+      { isMentor: true },
+      { name: { $exists: true, $ne: '' } },
+      { batch: { $exists: true, $ne: '' } },
+      { branch: { $exists: true, $ne: '' } },
+      { bio: { $exists: true, $ne: '' } },
+      { location: { $exists: true, $ne: '' } },
+      { skills: { $exists: true, $not: { $size: 0 } } },
+      { company: { $exists: true, $ne: '' } },
+      { designation: { $exists: true, $ne: '' } }
+    ];
 
+    if (expertise) {
+      queryConditions.push({
+        mentorExpertise: { $in: [new RegExp(expertise, 'i')] }
+      });
+    }
+
+    const filter = { $and: queryConditions };
     const mentors = await User.find(filter).select('-password');
     res.json(mentors);
   } catch (error) {
