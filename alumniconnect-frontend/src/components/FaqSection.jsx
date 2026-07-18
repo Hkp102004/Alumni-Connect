@@ -8,8 +8,10 @@ export default function FaqSection({ title, faqs }) {
   };
 
   return (
-    <section className="faq-container">
-      <h2 className="faq-title">{title}</h2>
+    <>
+      <div className="faq-divider"></div>
+      <section className="faq-container">
+        <h2 className="faq-title">{title}</h2>
       <div className="faq-list">
         {faqs.map((faq, index) => {
           const isOpen = openIndex === index;
@@ -44,5 +46,6 @@ export default function FaqSection({ title, faqs }) {
         })}
       </div>
     </section>
+    </>
   );
 }
