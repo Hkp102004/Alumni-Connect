@@ -146,7 +146,7 @@ export default function Opportunities() {
           {opportunities.map((op) => {
             const hasApplied = op.applicants?.some((a) => (a.user?._id || a.user) === user?._id);
             return (
-              <div key={op._id} className="card card-glow-hover opportunities__card">
+              <div key={op._id} className="card opportunities__card">
                 <span className="tag-badge opportunities__type">{op.type}</span>
                 <h3 className="opportunities__name">{op.title}</h3>
                 <span className="text-faint">{op.company} {op.location ? `· ${op.location}` : ''}</span>

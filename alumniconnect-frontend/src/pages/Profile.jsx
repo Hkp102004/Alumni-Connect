@@ -12,6 +12,9 @@ export default function Profile() {
     location: user?.location || '',
     bio: user?.bio || '',
     skills: (user?.skills || []).join(', '),
+    avatarUrl: user?.avatarUrl || '',
+    linkedinUrl: user?.linkedinUrl || '',
+    githubUrl: user?.githubUrl || '',
     isMentor: user?.isMentor || false,
     mentorExpertise: (user?.mentorExpertise || []).join(', '),
   });
@@ -55,7 +58,12 @@ export default function Profile() {
       <form className="card profile__form" onSubmit={handleSubmit}>
         <div className="profile__row">
           <label className="text-faint">Name</label>
-          <input className="input-field" name="name" value={form.name} onChange={handleChange} />
+          <input className="input-field" name="name" value={form.name} onChange={handleChange} required />
+        </div>
+
+        <div className="profile__row">
+          <label className="text-faint">Profile Picture URL</label>
+          <input className="input-field" name="avatarUrl" placeholder="https://unsplash.com/... or leave blank" value={form.avatarUrl} onChange={handleChange} />
         </div>
 
         <div className="profile__row-double">
@@ -66,6 +74,17 @@ export default function Profile() {
           <div className="profile__row">
             <label className="text-faint">Designation</label>
             <input className="input-field" name="designation" value={form.designation} onChange={handleChange} />
+          </div>
+        </div>
+
+        <div className="profile__row-double">
+          <div className="profile__row">
+            <label className="text-faint">LinkedIn URL</label>
+            <input className="input-field" name="linkedinUrl" placeholder="https://linkedin.com/in/..." value={form.linkedinUrl} onChange={handleChange} />
+          </div>
+          <div className="profile__row">
+            <label className="text-faint">GitHub URL</label>
+            <input className="input-field" name="githubUrl" placeholder="https://github.com/..." value={form.githubUrl} onChange={handleChange} />
           </div>
         </div>
 

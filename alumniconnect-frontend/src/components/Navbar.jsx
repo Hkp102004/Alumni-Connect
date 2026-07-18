@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
@@ -13,6 +14,19 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 40) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -20,9 +34,12 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="navbar">
-      <Link to="/" className="navbar__brand font-display glow-text">
-        ALUMNI<span className="glow-text-blue">CONNECT</span>
+    <nav className={`navbar ${location.pathname === '/' && !scrolled ? 'navbar--transparent' : ''}`}>
+      <Link to="/" className="navbar__brand">
+        <svg className="navbar__brand-icon" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <span>lumnus</span>
       </Link>
 
       {user && (

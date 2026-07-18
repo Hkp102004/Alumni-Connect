@@ -1,0 +1,17 @@
+{
+  "name": "alumni-connect-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "alumniconnect-frontend",
+    "alumniconnect-backend"
+  ],
+  "scripts": {
+    "dev:frontend": "npm run dev -w alumniconnect-frontend",
+    "dev:backend": "npm run dev -w alumniconnect-backend",
+    "dev": "concurrently \"npm:dev:backend\" \"npm:dev:frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

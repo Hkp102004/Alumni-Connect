@@ -2,54 +2,160 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 48px;
-  flex-wrap: wrap;
-  gap: 16px;
-  position: relative;
-  z-index: 10;
+  padding: 16px 48px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+  transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .navbar__brand {
-  font-size: 1.4rem;
-  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   white-space: nowrap;
+  color: var(--text);
+  text-transform: lowercase;
+}
+
+.navbar__brand-icon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
 }
 
 .navbar__links {
   display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 
 .navbar__pill {
   font-size: 0.85rem;
-  padding: 9px 20px;
+  padding: 8px 16px;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.navbar__pill:hover {
+  background: var(--surface-alt);
+  border-color: transparent;
+  color: var(--text);
+  transform: none;
+}
+
+.navbar__pill.pill-active {
+  background: var(--blue-glow);
+  color: var(--blue);
+  font-weight: 600;
 }
 
 .navbar__actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .navbar__cta {
-  padding: 9px 24px;
+  padding: 8px 18px;
   font-size: 0.85rem;
+  border-radius: var(--radius-md);
 }
 
 .navbar__logout {
-  padding: 9px 20px;
+  padding: 8px 16px;
   font-size: 0.85rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.navbar__logout:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #ef4444;
+}
+
+.navbar--transparent {
+  background: transparent !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.navbar--transparent .navbar__brand {
+  color: #ffffff !important;
+}
+
+.navbar--transparent .navbar__brand-icon {
+  stroke: #ffffff !important;
+}
+
+.navbar--transparent .navbar__pill {
+  color: #c7d2fe !important;
+}
+
+.navbar--transparent .navbar__pill:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+.navbar--transparent .navbar__pill.pill-active {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+}
+
+.navbar--transparent .navbar__logout {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+}
+
+.navbar--transparent .navbar__logout:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+}
+
+.navbar--transparent .navbar__cta {
+  background: #ffffff !important;
+  border-color: #ffffff !important;
+  color: #4f46e5 !important;
+}
+
+.navbar--transparent .navbar__cta:hover {
+  background: #f8fafc !important;
+  color: #4338ca !important;
 }
 
 @media (max-width: 768px) {
   .navbar {
-    padding: 18px 20px;
-    justify-content: center;
+    padding: 14px 20px;
+    flex-direction: column;
+    gap: 14px;
+    align-items: center;
   }
-  .navbar__links,
-  .navbar__actions {
-    justify-content: center;
+  .navbar__links {
+    order: 3;
     width: 100%;
+    justify-content: center;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .navbar__actions {
+    order: 2;
+  }
+  .navbar--transparent {
+    position: relative;
+    background: #4f46e5 !important; /* solid color on mobile since overlay gets crowded */
   }
 }

@@ -29,7 +29,7 @@ const requestMentorship = async (req, res) => {
 // @desc   Mentor updates status. Body: { status: 'active' | 'declined' | 'completed' }
 const updateMentorshipStatus = async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, meetingLink } = req.body;
     const mentorship = await Mentorship.findById(req.params.id);
 
     if (!mentorship) return res.status(404).json({ message: 'Mentorship not found' });
@@ -39,6 +39,9 @@ const updateMentorshipStatus = async (req, res) => {
     }
 
     mentorship.status = status;
+    if (meetingLink !== undefined) {
+      mentorship.meetingLink = meetingLink;
+    }
     await mentorship.save();
     res.json(mentorship);
   } catch (error) {
@@ -82,8 +85,8 @@ const getMyMentorships = async (req, res) => {
     if (status) filter.status = status;
 
     const mentorships = await Mentorship.find(filter)
-      .populate('mentor', 'name company designation')
-      .populate('mentee', 'name batch branch');
+      .populate('mentor', 'name company designation email avatarUrl linkedinUrl githubUrl')
+      .populate('mentee', 'name batch branch email avatarUrl linkedinUrl githubUrl');
 
     res.json(mentorships);
   } catch (error) {

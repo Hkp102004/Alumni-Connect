@@ -67,4 +67,88 @@ const getMe = async (req, res) => {
   res.json(req.user);
 };
 
-module.exports = { registerUser, loginUser, getMe };
+// @route  POST /api/auth/firebase-login
+const firebaseLogin = async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({ message: 'Token is required' });
+    }
+
+    const decoded = jwt.decode(token);
+    if (!decoded || !decoded.email) {
+      return res.status(400).json({ message: 'Invalid token' });
+    }
+
+    let user = await User.findOne({ email: decoded.email });
+    if (!user) {
+      // Create new user automatically (simulate sign-up from Google)
+      const randomPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10);
+      user = await User.create({
+        name: decoded.name || decoded.email.split('@')[0],
+        email: decoded.email,
+        password: randomPassword,
+        role: 'student'
+      });
+    }
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token: generateToken(user._id),
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @route  POST /api/auth/firebase-register
+const firebaseRegister = async (req, res) => {
+  try {
+    const { token, name, role, batch, branch, company } = req.body;
+    if (!token) {
+      return res.status(400).json({ message: 'Token is required' });
+    }
+
+    const decoded = jwt.decode(token);
+    if (!decoded || !decoded.email) {
+      return res.status(400).json({ message: 'Invalid token' });
+    }
+
+    let user = await User.findOne({ email: decoded.email });
+    if (user) {
+      return res.status(200).json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token: generateToken(user._id),
+      });
+    }
+
+    const randomPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10);
+    user = await User.create({
+      name: name || decoded.name || decoded.email.split('@')[0],
+      email: decoded.email,
+      password: randomPassword,
+      role: role || 'student',
+      batch,
+      branch,
+      company
+    });
+
+    res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token: generateToken(user._id),
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+module.exports = { registerUser, loginUser, getMe, firebaseLogin, firebaseRegister };

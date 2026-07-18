@@ -35,6 +35,13 @@ export default function Events() {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  const generateMeetLink = () => {
+    const chars = 'abcdefghijklmnopqrstuvwxyz';
+    const randPart = (len) => Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const link = `https://meet.google.com/${randPart(3)}-${randPart(4)}-${randPart(3)}`;
+    setForm({ ...form, meetingLink: link, location: 'Online' });
+  };
+
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
@@ -112,13 +119,26 @@ export default function Events() {
               value={form.location}
               onChange={handleChange}
             />
-            <input
-              className="input-field"
-              name="meetingLink"
-              placeholder="Meeting link (optional)"
-              value={form.meetingLink}
-              onChange={handleChange}
-            />
+            <div className="events__meet-input-wrapper">
+              <input
+                className="input-field"
+                name="meetingLink"
+                placeholder="Meeting link (optional)"
+                value={form.meetingLink}
+                onChange={handleChange}
+              />
+              <button 
+                type="button" 
+                className="btn-ghost events__generate-meet-btn" 
+                onClick={generateMeetLink}
+                title="Generate Google Meet Link"
+              >
+                <svg className="meet-camera-icon" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
+                </svg>
+                Generate Link
+              </button>
+            </div>
           </div>
           <button className="btn-primary" type="submit">Create event</button>
         </form>
@@ -132,7 +152,7 @@ export default function Events() {
           {events.map((ev) => {
             const hasRsvpd = ev.rsvps?.some((r) => (r.user?._id || r.user) === user?._id);
             return (
-              <div key={ev._id} className="card card-glow-hover events__card">
+              <div key={ev._id} className="card events__card">
                 <span className="tag-badge events__type">{ev.eventType}</span>
                 <h3 className="events__name">{ev.title}</h3>
                 <span className="text-faint">
@@ -142,6 +162,20 @@ export default function Events() {
                   })}
                 </span>
                 {ev.location && <span className="text-faint events__location">{ev.location}</span>}
+                {ev.meetingLink && (
+                  <a 
+                    href={ev.meetingLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="events__meet-link-btn"
+                    title="Open Google Meet Session"
+                  >
+                    <svg className="meet-camera-icon" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
+                    </svg>
+                    Join Google Meet
+                  </a>
+                )}
                 <p className="text-dim events__desc">{ev.description}</p>
                 <div className="events__footer">
                   <span className="text-faint">{ev.rsvps?.length || 0} attending</span>

@@ -63,8 +63,8 @@ const getMyConnections = async (req, res) => {
     if (status) filter.status = status;
 
     const connections = await Connection.find(filter)
-      .populate('fromUser', 'name role batch branch avatarUrl')
-      .populate('toUser', 'name role batch branch avatarUrl');
+      .populate('fromUser', 'name role batch branch email avatarUrl linkedinUrl githubUrl designation company bio')
+      .populate('toUser', 'name role batch branch email avatarUrl linkedinUrl githubUrl designation company bio');
 
     res.json(connections);
   } catch (error) {

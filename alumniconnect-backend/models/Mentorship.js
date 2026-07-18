@@ -19,6 +19,7 @@ const mentorshipSchema = new mongoose.Schema(
       enum: ['pending', 'active', 'completed', 'declined'],
       default: 'pending',
     },
+    meetingLink: { type: String, trim: true, default: '' },
     sessionsLog: [sessionLogSchema],
   },
   { timestamps: true }

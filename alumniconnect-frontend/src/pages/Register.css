@@ -1,0 +1,171 @@
+/* Register page — imports Login.css shared styles + register-specific ones */
+@import './Login.css';
+
+/* Slightly wider card for the register flow */
+.register-card {
+  max-width: 520px;
+}
+
+/* Step 2 label */
+.register-step-label {
+  font-size: 0.95rem;
+  color: #717171;
+  margin: 0 0 4px 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Role toggle buttons */
+.register-role-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.register-role-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.register-role-btn:hover {
+  border-color: #94a3b8;
+  color: #334155;
+}
+
+.register-role-btn--active {
+  border-color: var(--blue);
+  background: #eff6ff;
+  color: var(--blue);
+  box-shadow: 0 0 0 1px var(--blue);
+}
+
+.register-role-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.register-role-btn--active .register-role-icon {
+  stroke: var(--blue);
+}
+
+/* Details row — batch + branch side by side */
+.register-details-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.register-details-row .stacked-input {
+  width: 100%;
+  border: 1px solid #b0b0b0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 0.95rem;
+  color: #222222;
+  background: #ffffff;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.register-details-row .stacked-input:focus {
+  border-color: var(--blue);
+}
+
+/* Company standalone input */
+.airbnb-login-form > .stacked-input {
+  width: 100%;
+  border: 1px solid #b0b0b0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 0.95rem;
+  color: #222222;
+  background: #ffffff;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.airbnb-login-form > .stacked-input:focus {
+  border-color: var(--blue);
+}
+
+/* Step actions row */
+.register-step-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.register-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid #222222;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #222222;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-family: var(--font-body);
+  white-space: nowrap;
+}
+
+.register-back-btn:hover {
+  background: #f7f7f7;
+}
+
+.register-submit-btn {
+  flex: 1;
+}
+
+/* Stacked triple input group for step 1 */
+.stacked-triple .stacked-top {
+  border-bottom: 1px solid #b0b0b0 !important;
+}
+
+.stacked-triple .stacked-mid {
+  border-bottom: 1px solid #b0b0b0 !important;
+}
+
+@media (max-width: 500px) {
+  .register-card {
+    max-width: 100%;
+    padding: 24px;
+    border-radius: 20px;
+  }
+
+  .register-role-toggle {
+    grid-template-columns: 1fr;
+  }
+
+  .register-details-row {
+    grid-template-columns: 1fr;
+  }
+
+  .register-step-actions {
+    flex-direction: column-reverse;
+  }
+
+  .register-back-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -1,85 +1,619 @@
-.mentorship {
-  padding: 20px 48px 80px;
+/* ===== Mentorship Page — Premium Redesign ===== */
+
+/* Page container */
+.ms-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 48px 80px;
 }
 
-.mentorship__title {
-  font-size: 1.9rem;
-  margin: 0 0 8px;
-}
-
-.mentorship__subtitle {
-  margin: 0 0 28px;
-}
-
-.mentorship__tabs {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 32px;
-}
-
-.mentorship__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 24px;
-}
-
-.mentorship__card {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.mentorship__name {
-  margin: 0;
-  font-size: 1.05rem;
-  font-family: var(--font-body);
-  font-weight: 600;
-}
-
-.mentorship__bio {
-  font-size: 0.88rem;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.mentorship__tags {
-  margin-bottom: 6px;
-}
-
-.mentorship__request-btn {
-  margin-top: 8px;
-  width: 100%;
-}
-
-.mentorship__status-row {
+/* ===== Hero Section ===== */
+.ms-hero {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  padding: 48px 0 40px;
+  gap: 40px;
 }
 
-.mentorship__status {
-  text-transform: capitalize;
+.ms-hero__title {
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 8px;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.ms-hero__sub {
+  font-size: 1.05rem;
+  color: #64748b;
+  margin: 0;
+  max-width: 440px;
+  line-height: 1.6;
+}
+
+.ms-hero__stats {
+  display: flex;
+  gap: 32px;
   flex-shrink: 0;
 }
 
-.mentorship__status--active {
-  background: rgba(91, 217, 143, 0.14);
-  border-color: rgba(91, 217, 143, 0.4);
-  color: #a8f0c6;
+.ms-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
-.mentorship__status--declined {
-  background: rgba(217, 91, 91, 0.14);
-  border-color: rgba(217, 91, 91, 0.4);
-  color: #f5a3a3;
+.ms-stat__number {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--blue);
+  line-height: 1;
 }
 
-.mentorship__modal-backdrop {
+.ms-stat__label {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ===== Toolbar — Tabs + Search ===== */
+.ms-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0;
+  margin-bottom: 32px;
+}
+
+.ms-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.ms-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  border: none;
+  background: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-family: var(--font-body);
+  margin-bottom: -1px;
+}
+
+.ms-tab:hover {
+  color: #334155;
+}
+
+.ms-tab--active {
+  color: #0f172a;
+  border-bottom-color: var(--blue);
+}
+
+.ms-tab__badge {
+  background: var(--blue);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  line-height: 1.2;
+}
+
+.ms-search-wrap {
+  position: relative;
+  flex: 0 1 320px;
+  margin-bottom: 12px;
+}
+
+.ms-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.ms-search {
+  width: 100%;
+  padding: 10px 14px 10px 40px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: #0f172a;
+  background: #f8fafc;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.ms-search:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: #fff;
+}
+
+/* ===== Loading ===== */
+.ms-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 0;
+  color: #94a3b8;
+}
+
+.ms-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e2e8f0;
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: ms-spin 0.7s linear infinite;
+}
+
+@keyframes ms-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ===== Empty States ===== */
+.ms-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 80px 0;
+  text-align: center;
+  color: #94a3b8;
+}
+
+.ms-empty h3 {
+  margin: 0;
+  color: #334155;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.ms-empty p {
+  margin: 0;
+  max-width: 360px;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.ms-empty__cta {
+  margin-top: 8px;
+  padding: 10px 24px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.ms-empty__cta:hover {
+  opacity: 0.9;
+}
+
+/* ===== Mentor Grid Cards ===== */
+.ms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.ms-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  transition: all 0.25s ease;
+}
+
+.ms-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.08);
+  transform: translateY(-3px);
+}
+
+.ms-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.ms-card__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--blue);
+}
+
+.ms-card__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ms-card__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ms-card__name {
+  margin: 0 0 2px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.ms-card__role {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.ms-card__location {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+.ms-card__bio {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #475569;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ms-card__expertise {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ms-card__expertise-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+
+.ms-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ms-tag {
+  padding: 5px 12px;
+  background: #f1f5f9;
+  color: #334155;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+}
+
+.ms-tag--muted {
+  color: #94a3b8;
+  background: #fafafa;
+}
+
+.ms-card__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  margin-top: auto;
+  background: #0f172a;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.ms-card__cta:hover {
+  background: #1e293b;
+  transform: scale(1.02);
+}
+
+/* ===== My Mentorships List ===== */
+.ms-my-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ms-session {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+
+.ms-session:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.ms-session--active {
+  border-left: 4px solid #22c55e;
+}
+
+.ms-session--pending {
+  border-left: 4px solid #f59e0b;
+}
+
+.ms-session--completed {
+  border-left: 4px solid #94a3b8;
+  opacity: 0.7;
+}
+
+.ms-session--declined {
+  border-left: 4px solid #ef4444;
+  opacity: 0.6;
+}
+
+.ms-session__left {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ms-session__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--blue);
+}
+
+.ms-session__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ms-session__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ms-session__name {
+  margin: 0 0 2px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.ms-session__meta {
+  margin: 0 0 6px;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.ms-session__msg {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.ms-session__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* Status badge */
+.ms-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.ms-status--pending {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.ms-status--active {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.ms-status--completed {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.ms-status--declined {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+/* Action buttons */
+.ms-session__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.ms-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  font-family: var(--font-body);
+}
+
+.ms-btn--accept {
+  background: #22c55e;
+  color: #fff;
+}
+
+.ms-btn--accept:hover {
+  background: #16a34a;
+}
+
+.ms-btn--decline {
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid #fecaca;
+}
+
+.ms-btn--decline:hover {
+  background: #fef2f2;
+}
+
+.ms-btn--outline {
+  background: transparent;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.ms-btn--outline:hover {
+  background: #f1f5f9;
+}
+
+.ms-btn--primary {
+  background: var(--blue);
+  color: #fff;
+}
+
+.ms-btn--primary:hover {
+  opacity: 0.9;
+}
+
+.ms-btn--complete {
+  background: #0f172a;
+  color: #fff;
+}
+
+.ms-btn--complete:hover {
+  background: #1e293b;
+}
+
+.ms-btn--sm {
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  border-radius: 8px;
+}
+
+/* Meet link */
+.ms-session__meet {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.ms-meet-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #eff6ff;
+  color: var(--blue);
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.ms-meet-link:hover {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.ms-session__mentor-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* ===== Modal ===== */
+.ms-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -87,27 +621,187 @@
   padding: 20px;
 }
 
-.mentorship__modal {
+.ms-modal {
+  position: relative;
   width: 100%;
-  max-width: 440px;
+  max-width: 480px;
+  background: #fff;
+  border-radius: 24px;
+  padding: 36px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  animation: ms-modal-in 0.25s ease;
 }
 
-.mentorship__modal-form {
+@keyframes ms-modal-in {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.ms-modal__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.15s ease;
+}
+
+.ms-modal__close:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.ms-modal__header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.ms-modal__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--blue);
+}
+
+.ms-modal__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ms-modal__name {
+  margin: 0 0 2px;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.ms-modal__sub {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.ms-modal__form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-top: 16px;
+  gap: 20px;
 }
 
-.mentorship__modal-actions {
+.ms-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ms-form-group label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ms-form-group input,
+.ms-form-group textarea {
+  padding: 12px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  color: #0f172a;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: var(--font-body);
+  resize: vertical;
+}
+
+.ms-form-group input:focus,
+.ms-form-group textarea:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.ms-modal__footer {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
+.ms-modal__footer .ms-btn {
+  padding: 12px 24px;
+  font-size: 0.9rem;
+}
+
+/* ===== Responsive ===== */
 @media (max-width: 768px) {
-  .mentorship {
-    padding: 20px 20px 60px;
+  .ms-page {
+    padding: 0 20px 60px;
+  }
+
+  .ms-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    padding: 32px 0 28px;
+  }
+
+  .ms-hero__title {
+    font-size: 1.8rem;
+  }
+
+  .ms-hero__stats {
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .ms-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding-bottom: 0;
+  }
+
+  .ms-search-wrap {
+    flex: auto;
+    margin-bottom: 16px;
+  }
+
+  .ms-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ms-session {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ms-session__right {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .ms-session__meet {
+    align-items: flex-start;
+    width: 100%;
   }
 }

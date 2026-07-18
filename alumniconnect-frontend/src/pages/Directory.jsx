@@ -1,11 +1,23 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import api from '../api/client';
 import './Directory.css';
+import { useAuth } from '../context/AuthContext';
 
 export default function Directory() {
+  const { user } = useAuth();
   const [users, setUsers] = useState([]);
+  const [connections, setConnections] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ search: '', role: '', batch: '', branch: '' });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const [filters, setFilters] = useState({
+    search: searchParams.get('search') || '',
+    role: searchParams.get('role') || '',
+    batch: searchParams.get('batch') || '',
+    branch: searchParams.get('branch') || ''
+  });
 
   const fetchUsers = async (activeFilters) => {
     setLoading(true);
@@ -13,8 +25,12 @@ export default function Directory() {
       const params = Object.fromEntries(
         Object.entries(activeFilters).filter(([, v]) => v)
       );
-      const res = await api.get('/users', { params });
-      setUsers(res.data);
+      const [usersRes, connRes] = await Promise.all([
+        api.get('/users', { params }),
+        api.get('/connections/me')
+      ]);
+      setUsers(usersRes.data);
+      setConnections(connRes.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -23,85 +39,388 @@ export default function Directory() {
   };
 
   useEffect(() => {
-    fetchUsers(filters);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const activeFilters = {
+      search: searchParams.get('search') || '',
+      role: searchParams.get('role') || '',
+      batch: searchParams.get('batch') || '',
+      branch: searchParams.get('branch') || ''
+    };
+    setFilters(activeFilters);
+    fetchUsers(activeFilters);
+  }, [searchParams]);
 
   const handleFilterChange = (e) => setFilters({ ...filters, [e.target.name]: e.target.value });
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchUsers(filters);
+    setSearchParams(Object.fromEntries(Object.entries(filters).filter(([, v]) => v)));
+  };
+
+  const getConnectionInfo = (otherUserId) => {
+    const conn = connections.find(
+      (c) =>
+        (c.fromUser?._id || c.fromUser) === otherUserId ||
+        (c.toUser?._id || c.toUser) === otherUserId
+    );
+    if (!conn) return null;
+    return {
+      id: conn._id,
+      status: conn.status,
+      fromUser: conn.fromUser?._id || conn.fromUser,
+      toUser: conn.toUser?._id || conn.toUser,
+    };
+  };
+
+  const handleConnectClick = async (toUserId) => {
+    try {
+      await api.post('/connections', { toUser: toUserId });
+      const connRes = await api.get('/connections/me');
+      setConnections(connRes.data);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Could not send connection request');
+    }
+  };
+
+  const handleRespondClick = async (connectionId, status) => {
+    try {
+      await api.put(`/connections/${connectionId}`, { status });
+      const connRes = await api.get('/connections/me');
+      setConnections(connRes.data);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Could not respond to request');
+    }
+  };
+
+  const connectedCount = connections.filter(c => c.status === 'accepted').length;
+  const alumniCount = users.filter(u => u.role === 'alumni').length;
+  const studentCount = users.filter(u => u.role === 'student').length;
+
+  const renderConnectionButton = (u, variant = 'card') => {
+    const connInfo = getConnectionInfo(u._id);
+    const isSelf = u._id === user?._id;
+    const isModal = variant === 'modal';
+    const btnClass = isModal ? 'dir-modal-action-btn' : 'dir-card__cta';
+
+    if (isSelf) {
+      return <span className="dir-self-label">Your profile</span>;
+    }
+    if (!connInfo) {
+      return (
+        <button className={`${btnClass} dir-btn--connect`} onClick={(e) => { e.stopPropagation(); handleConnectClick(u._id); }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/>
+            <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+          </svg>
+          Connect
+        </button>
+      );
+    }
+    if (connInfo.status === 'pending') {
+      if (connInfo.fromUser === user?._id) {
+        return <span className="dir-status-pill dir-status-pill--pending">Pending</span>;
+      }
+      return (
+        <div className="dir-respond-row" onClick={(e) => e.stopPropagation()}>
+          <button className={`${btnClass} dir-btn--accept`} onClick={() => handleRespondClick(connInfo.id, 'accepted')}>Accept</button>
+          <button className={`${btnClass} dir-btn--ignore`} onClick={() => handleRespondClick(connInfo.id, 'rejected')}>Ignore</button>
+        </div>
+      );
+    }
+    if (connInfo.status === 'accepted') {
+      return (
+        <span className="dir-status-pill dir-status-pill--connected">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="13" height="13"><path d="M20 6 9 17l-5-5"/></svg>
+          Connected
+        </span>
+      );
+    }
+    return (
+      <button className={`${btnClass} dir-btn--connect`} onClick={(e) => { e.stopPropagation(); handleConnectClick(u._id); }}>
+        Connect
+      </button>
+    );
   };
 
   return (
-    <div className="directory">
-      <h1 className="font-display glow-text directory__title">ALUMNI DIRECTORY</h1>
-      <p className="text-dim directory__subtitle">
-        Discover graduates and students across every batch and branch.
-      </p>
+    <div className="dir-page">
+      {/* Hero */}
+      <section className="dir-hero">
+        <div className="dir-hero__content">
+          <h1 className="dir-hero__title">Alumni Directory</h1>
+          <p className="dir-hero__sub">Discover graduates and students across every batch and branch.</p>
+        </div>
+        <div className="dir-hero__stats">
+          <div className="dir-stat">
+            <span className="dir-stat__num">{users.length}</span>
+            <span className="dir-stat__label">Total members</span>
+          </div>
+          <div className="dir-stat">
+            <span className="dir-stat__num">{alumniCount}</span>
+            <span className="dir-stat__label">Alumni</span>
+          </div>
+          <div className="dir-stat">
+            <span className="dir-stat__num">{connectedCount}</span>
+            <span className="dir-stat__label">Your connections</span>
+          </div>
+        </div>
+      </section>
 
-      <form className="directory__filters" onSubmit={handleSearch}>
-        <input
-          className="input-field"
-          name="search"
-          placeholder="Search by name or bio..."
-          value={filters.search}
-          onChange={handleFilterChange}
-        />
-        <select className="input-field directory__select" name="role" value={filters.role} onChange={handleFilterChange}>
-          <option value="">All roles</option>
-          <option value="student">Students</option>
-          <option value="alumni">Alumni</option>
-        </select>
-        <input
-          className="input-field directory__select"
-          name="batch"
-          placeholder="Batch"
-          value={filters.batch}
-          onChange={handleFilterChange}
-        />
-        <input
-          className="input-field directory__select"
-          name="branch"
-          placeholder="Branch"
-          value={filters.branch}
-          onChange={handleFilterChange}
-        />
-        <button type="submit" className="btn-primary">
-          Search
-        </button>
+      {/* Search & Filters Bar */}
+      <form className="dir-filters" onSubmit={handleSearch}>
+        <div className="dir-search-wrap">
+          <svg className="dir-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            className="dir-search"
+            name="search"
+            placeholder="Search by name, bio, or skills..."
+            value={filters.search}
+            onChange={handleFilterChange}
+          />
+        </div>
+        <div className="dir-filter-pills">
+          <div className="dir-select-wrap">
+            <select className="dir-select" name="role" value={filters.role} onChange={handleFilterChange}>
+              <option value="">All roles</option>
+              <option value="student">Students</option>
+              <option value="alumni">Alumni</option>
+            </select>
+          </div>
+          <input
+            className="dir-filter-input"
+            name="batch"
+            placeholder="Batch"
+            value={filters.batch}
+            onChange={handleFilterChange}
+          />
+          <input
+            className="dir-filter-input"
+            name="branch"
+            placeholder="Branch"
+            value={filters.branch}
+            onChange={handleFilterChange}
+          />
+          <button type="submit" className="dir-search-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            Search
+          </button>
+        </div>
       </form>
 
-      {loading ? (
-        <p className="text-dim">Loading...</p>
-      ) : users.length === 0 ? (
-        <p className="text-dim">No one matches these filters yet.</p>
-      ) : (
-        <div className="directory__grid">
-          {users.map((u) => (
-            <div key={u._id} className="card card-glow-hover directory__card">
-              <div className="directory__card-header">
-                <div className="directory__avatar font-display">
-                  {u.name?.charAt(0).toUpperCase()}
+      {/* Content */}
+      <section className="dir-content">
+        {loading ? (
+          <div className="dir-loading">
+            <div className="dir-spinner"></div>
+            <p>Loading directory...</p>
+          </div>
+        ) : users.length === 0 ? (
+          <div className="dir-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" width="48" height="48">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <h3>No results found</h3>
+            <p>Try adjusting your search or filters.</p>
+          </div>
+        ) : (
+          <div className="dir-grid">
+            {users.map((u) => {
+              const connInfo = getConnectionInfo(u._id);
+              const isSelf = u._id === user?._id;
+              const isConnected = connInfo?.status === 'accepted';
+
+              return (
+                <div key={u._id} className="dir-card" onClick={() => setSelectedUser(u)}>
+                  <div className="dir-card__top">
+                    <div className="dir-card__avatar">
+                      {u.avatarUrl || u.profilePicture ? (
+                        <img src={u.avatarUrl || u.profilePicture} alt={u.name} />
+                      ) : (
+                        <span>{u.name?.charAt(0).toUpperCase()}</span>
+                      )}
+                    </div>
+                    <div className="dir-card__role-badge">
+                      {u.role === 'alumni' ? 'Alumni' : 'Student'}
+                    </div>
+                  </div>
+
+                  <div className="dir-card__body">
+                    <h3 className="dir-card__name">{u.name}</h3>
+                    <p className="dir-card__subtitle">
+                      {u.role === 'alumni'
+                        ? `${u.designation || 'Alumnus'}${u.company ? ` at ${u.company}` : ''}`
+                        : `${u.branch || 'Student'}${u.batch ? ` · Batch ${u.batch}` : ''}`}
+                    </p>
+                    {u.location && (
+                      <span className="dir-card__location">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        {u.location}
+                      </span>
+                    )}
+                  </div>
+
+                  {u.bio && <p className="dir-card__bio">{u.bio}</p>}
+
+                  <div className="dir-card__tags">
+                    {u.batch && <span className="dir-tag">Batch {u.batch}</span>}
+                    {u.branch && <span className="dir-tag">{u.branch}</span>}
+                    {u.isMentor && <span className="dir-tag dir-tag--mentor">Mentor</span>}
+                  </div>
+
+                  <div className="dir-card__footer" onClick={(e) => e.stopPropagation()}>
+                    {renderConnectionButton(u, 'card')}
+                  </div>
                 </div>
-                <div>
-                  <h3 className="directory__name">{u.name}</h3>
-                  <span className="text-faint directory__role">
-                    {u.role === 'alumni' ? u.company || 'Alumni' : `Student · ${u.branch || ''}`}
-                  </span>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* Profile Modal */}
+      {selectedUser && (
+        <div className="dir-modal-overlay" onClick={() => setSelectedUser(null)}>
+          <div className="dir-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="dir-modal__close" onClick={() => setSelectedUser(null)}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+
+            <div className="dir-modal__body">
+              {/* Left column */}
+              <div className="dir-modal__left">
+                <div className="dir-modal__avatar">
+                  {selectedUser.avatarUrl || selectedUser.profilePicture ? (
+                    <img src={selectedUser.avatarUrl || selectedUser.profilePicture} alt={selectedUser.name} />
+                  ) : (
+                    <span>{selectedUser.name?.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+
+                <div className="dir-modal__socials">
+                  {selectedUser.linkedinUrl && (
+                    <a href={selectedUser.linkedinUrl} target="_blank" rel="noopener noreferrer" className="dir-social-btn">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
+                        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                        <rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>
+                      </svg>
+                      LinkedIn
+                    </a>
+                  )}
+                  {selectedUser.githubUrl && (
+                    <a href={selectedUser.githubUrl} target="_blank" rel="noopener noreferrer" className="dir-social-btn">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
+                        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                      </svg>
+                      GitHub
+                    </a>
+                  )}
+                  {!selectedUser.linkedinUrl && !selectedUser.githubUrl && (
+                    <p className="dir-no-socials">No social links added</p>
+                  )}
                 </div>
               </div>
 
-              {u.bio && <p className="text-dim directory__bio">{u.bio}</p>}
+              {/* Right column */}
+              <div className="dir-modal__right">
+                <span className="dir-modal__role-tag">{selectedUser.role}</span>
+                <h2 className="dir-modal__name">{selectedUser.name}</h2>
+                <p className="dir-modal__designation">
+                  {selectedUser.role === 'alumni' ? `${selectedUser.designation || 'Alumnus'} ${selectedUser.company ? `at ${selectedUser.company}` : ''}` : `Student · ${selectedUser.branch || ''}`}
+                </p>
 
-              <div className="directory__tags">
-                {u.batch && <span className="tag-badge">Batch {u.batch}</span>}
-                {u.branch && <span className="tag-badge">{u.branch}</span>}
-                {u.isMentor && <span className="tag-badge">Mentor</span>}
+                <div className="dir-modal__meta-row">
+                  {selectedUser.location && (
+                    <span className="dir-modal__meta-item">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                      </svg>
+                      {selectedUser.location}
+                    </span>
+                  )}
+                  {selectedUser.batch && (
+                    <span className="dir-modal__meta-item">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                      </svg>
+                      Batch {selectedUser.batch}{selectedUser.branch ? ` · ${selectedUser.branch}` : ''}
+                    </span>
+                  )}
+                </div>
+
+                {selectedUser.bio && (
+                  <div className="dir-modal__section">
+                    <h4>About</h4>
+                    <p>{selectedUser.bio}</p>
+                  </div>
+                )}
+
+                {selectedUser.skills?.length > 0 && (
+                  <div className="dir-modal__section">
+                    <h4>Skills</h4>
+                    <div className="dir-modal__skills">
+                      {selectedUser.skills.map((s) => <span key={s} className="dir-tag">{s}</span>)}
+                    </div>
+                  </div>
+                )}
+
+                {/* Connection panel */}
+                <div className="dir-modal__conn-panel">
+                  {(() => {
+                    const connInfo = getConnectionInfo(selectedUser._id);
+                    if (selectedUser._id === user?._id) return <span className="dir-self-label">This is your profile</span>;
+                    if (!connInfo) {
+                      return (
+                        <button className="dir-modal-action-btn dir-btn--connect" onClick={() => handleConnectClick(selectedUser._id)}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/>
+                            <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+                          </svg>
+                          Connect
+                        </button>
+                      );
+                    }
+                    if (connInfo.status === 'pending') {
+                      if (connInfo.fromUser === user?._id) {
+                        return <span className="dir-status-pill dir-status-pill--pending" style={{width:'100%',justifyContent:'center'}}>Request Sent (Pending)</span>;
+                      }
+                      return (
+                        <div className="dir-respond-row">
+                          <button className="dir-modal-action-btn dir-btn--accept" onClick={() => handleRespondClick(connInfo.id, 'accepted')}>Accept</button>
+                          <button className="dir-modal-action-btn dir-btn--ignore" onClick={() => handleRespondClick(connInfo.id, 'rejected')}>Ignore</button>
+                        </div>
+                      );
+                    }
+                    if (connInfo.status === 'accepted') {
+                      return (
+                        <div className="dir-connected-block">
+                          <div className="dir-connected-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16"><path d="M20 6 9 17l-5-5"/></svg>
+                            Connected
+                          </div>
+                          <div className="dir-connected-email">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14">
+                              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                              <path d="m22 6-10 7L2 6"/>
+                            </svg>
+                            <strong>{selectedUser.email}</strong>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return (
+                      <button className="dir-modal-action-btn dir-btn--connect" onClick={() => handleConnectClick(selectedUser._id)}>Connect</button>
+                    );
+                  })()}
+                </div>
               </div>
             </div>
-          ))}
+          </div>
         </div>
       )}
     </div>

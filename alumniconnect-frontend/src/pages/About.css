@@ -1,0 +1,122 @@
+.about-page {
+  padding: 80px 24px;
+  background: var(--bg);
+  min-height: calc(100vh - 72px);
+  display: flex;
+  justify-content: center;
+}
+
+.about-container {
+  max-width: 1000px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
+.about-hero {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.about-badge {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--blue);
+  background: var(--blue-glow);
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.08em;
+}
+
+.about-hero h1 {
+  font-size: clamp(2.2rem, 5vw, 3.2rem);
+  color: var(--text);
+  margin: 0;
+}
+
+.about-subtitle {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+.about-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 32px 24px;
+  border-radius: var(--radius-lg);
+  text-align: left;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.about-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.about-card-icon {
+  margin-bottom: 20px;
+  color: var(--blue);
+  background: var(--blue-glow);
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.about-card-svg {
+  width: 24px;
+  height: 24px;
+  stroke: var(--blue);
+}
+
+.about-card h3 {
+  font-size: 1.25rem;
+  margin: 0 0 10px 0;
+  color: var(--text);
+}
+
+.about-card p {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+.about-vision {
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.about-vision h2 {
+  font-size: 1.8rem;
+  color: var(--text);
+  margin: 0;
+}
+
+.about-vision p {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+  margin: 0;
+}

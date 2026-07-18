@@ -1,21 +1,32 @@
 .profile {
-  padding: 20px 48px 80px;
-  max-width: 640px;
+  padding: 40px 48px 80px;
+  max-width: 680px;
+  margin: 0 auto;
 }
 
 .profile__title {
-  font-size: 1.9rem;
+  font-size: 2rem;
+  font-weight: 800;
   margin: 0 0 8px;
+  letter-spacing: -0.02em;
+  color: var(--text);
 }
 
 .profile__subtitle {
   margin: 0 0 32px;
+  color: var(--text-dim);
+  font-size: 1rem;
 }
 
 .profile__form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
 }
 
 .profile__row {
@@ -31,44 +42,68 @@
 }
 
 .profile__row label {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-dim);
 }
 
 .profile__textarea {
   resize: vertical;
+  min-height: 100px;
   font-family: var(--font-body);
 }
 
 .profile__checkbox {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.9rem;
+  gap: 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
   cursor: pointer;
+  padding: 8px 0;
 }
 
 .profile__checkbox input {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   accent-color: var(--blue);
+  cursor: pointer;
 }
 
 .profile__submit {
-  margin-top: 8px;
+  margin-top: 12px;
+  padding: 12px 24px;
+  align-self: flex-start;
 }
 
 .profile__saved {
   margin: 0;
   font-size: 0.9rem;
+  font-weight: 600;
+  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 @media (max-width: 600px) {
   .profile {
-    padding: 20px 20px 60px;
+    padding: 24px 20px 60px;
+  }
+  .profile__form {
+    padding: 24px 20px;
   }
   .profile__row-double {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .profile__submit {
+    align-self: stretch;
   }
 }

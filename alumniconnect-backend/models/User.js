@@ -19,6 +19,8 @@ const userSchema = new mongoose.Schema(
     bio: { type: String, maxlength: 500 },
     skills: [{ type: String, trim: true }],
     avatarUrl: { type: String, default: '' },
+    linkedinUrl: { type: String, default: '' },
+    githubUrl: { type: String, default: '' },
     isMentor: { type: Boolean, default: false }, // alumni opting in as mentors
     mentorExpertise: [{ type: String, trim: true }],
   },

@@ -58,7 +58,8 @@ const updateProfile = async (req, res) => {
   try {
     const allowedFields = [
       'name', 'batch', 'branch', 'company', 'designation',
-      'location', 'bio', 'skills', 'avatarUrl', 'isMentor', 'mentorExpertise',
+      'location', 'bio', 'skills', 'avatarUrl', 'linkedinUrl', 'githubUrl',
+      'isMentor', 'mentorExpertise',
     ];
 
     const updates = {};
