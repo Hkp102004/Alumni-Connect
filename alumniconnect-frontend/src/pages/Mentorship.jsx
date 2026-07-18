@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import './Mentorship.css';
+import FaqSection from '../components/FaqSection';
 
 export default function Mentorship() {
   const { user } = useAuth();
@@ -334,6 +335,29 @@ export default function Mentorship() {
           </>
         )}
       </section>
+
+      {/* FAQ Section */}
+      <FaqSection
+        title="Mentorship FAQs"
+        faqs={[
+          {
+            question: "How do I request a mentorship session?",
+            answer: "Browse available mentors on the 'Find a Mentor' tab, click 'Request Mentorship' on a mentor's card, select your interest area, and send a message."
+          },
+          {
+            question: "How do we connect for the actual mentorship session?",
+            answer: "Once the mentor accepts your request, they will provide a Google Meet link. You can join the meeting directly from the 'My Sessions' tab."
+          },
+          {
+            question: "Who can host mentorship sessions?",
+            answer: "Any registered Alumnus can toggle their mentor status in their profile settings to start offering mentorship."
+          },
+          {
+            question: "What happens after a mentorship session is completed?",
+            answer: "The mentor can mark the session as 'Completed'. You can then request another session or connect with other mentors."
+          }
+        ]}
+      />
 
       {/* Request Modal */}
       {requestModal && (

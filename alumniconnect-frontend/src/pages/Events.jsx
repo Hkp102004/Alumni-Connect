@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import './Events.css';
+import FaqSection from '../components/FaqSection';
 
 export default function Events() {
   const { user } = useAuth();
@@ -261,6 +262,29 @@ export default function Events() {
           )}
         </div>
       )}
+
+      {/* FAQ Section */}
+      <FaqSection
+        title="Events FAQs"
+        faqs={[
+          {
+            question: "Who can host an event on Lumnus?",
+            answer: "Currently, alumni have the permission to host new events (reunions, webinars, workshops) by clicking the 'Host an Event' button."
+          },
+          {
+            question: "How do I RSVP for an event?",
+            answer: "Browse the upcoming events grid, find an event you want to attend, and click 'RSVP'. The event card will update to show you are going."
+          },
+          {
+            question: "Can we host virtual events?",
+            answer: "Yes, when hosting an event, you can generate a mock Google Meet link automatically using the 'Generate Meet Link' helper and set the location to 'Online'."
+          },
+          {
+            question: "Can I filter events by type?",
+            answer: "Yes, use the category tabs at the top (Reunions, Webinars, Workshops, Networking) to filter events by their respective formats."
+          }
+        ]}
+      />
 
       {/* Host Event Modal */}
       {showForm && (

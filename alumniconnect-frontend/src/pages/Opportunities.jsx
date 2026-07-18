@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import './Opportunities.css';
+import FaqSection from '../components/FaqSection';
 
 export default function Opportunities() {
   const { user } = useAuth();
@@ -237,6 +238,29 @@ export default function Opportunities() {
           )}
         </div>
       )}
+
+      {/* FAQ Section */}
+      <FaqSection
+        title="Opportunities FAQs"
+        faqs={[
+          {
+            question: "Who can post job openings and internships?",
+            answer: "Alumni can post openings by clicking the 'Post an Opening' button in the toolbar."
+          },
+          {
+            question: "How do I apply for an opportunity?",
+            answer: "For opportunities with direct applications, click 'Apply Now'. If the opportunity has an external link, click 'Apply Externally' to go to the company's portal."
+          },
+          {
+            question: "What is the difference between jobs and internships?",
+            answer: "Jobs are full-time opportunities typically for graduates, while Internships are short-term training placements suitable for current students."
+          },
+          {
+            question: "Can students post opportunities?",
+            answer: "No, currently only alumni can post opportunities to ensure they are verified listings from our professional network."
+          }
+        ]}
+      />
 
       {/* Host Opportunity Modal */}
       {showForm && (

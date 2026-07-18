@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import api from '../api/client';
 import './Directory.css';
 import { useAuth } from '../context/AuthContext';
+import FaqSection from '../components/FaqSection';
 
 export default function Directory() {
   const { user } = useAuth();
@@ -282,6 +283,29 @@ export default function Directory() {
           </div>
         )}
       </section>
+
+      {/* FAQ Section */}
+      <FaqSection
+        title="Directory FAQs"
+        faqs={[
+          {
+            question: "How can I connect with an alumnus?",
+            answer: "You can click the 'Connect' button on their card to send a request. Once accepted, their email will be visible to you."
+          },
+          {
+            question: "What is the difference between a student and an alumnus profile?",
+            answer: "Alumni profiles showcase their graduation year, current company, designation, and mentorship availability, while student profiles focus on current studies, branch, and batch."
+          },
+          {
+            question: "Can I filter members by graduation year or department?",
+            answer: "Yes, use the Batch and Branch filter options in the toolbar to find members from specific cohorts or departments."
+          },
+          {
+            question: "How do I update my profile details?",
+            answer: "Go to the Profile section from the top right user menu to edit your details, LinkedIn, GitHub, and bio."
+          }
+        ]}
+      />
 
       {/* Profile Modal */}
       {selectedUser && (
