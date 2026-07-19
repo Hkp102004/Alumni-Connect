@@ -39,6 +39,27 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'AlumniConnect API is running' });
 });
 
+// Public stats — no auth required
+app.get('/api/stats', async (req, res) => {
+  try {
+    const User = require('./models/User');
+    const Event = require('./models/Event');
+
+    const [totalUsers, totalMentors, events] = await Promise.all([
+      User.countDocuments({ isActive: { $ne: false } }),
+      User.countDocuments({ isMentor: true, isActive: { $ne: false } }),
+      Event.find({}, { rsvps: 1 }),
+    ]);
+
+    const totalRsvps = events.reduce((sum, e) => sum + (e.rsvps?.length || 0), 0);
+    const totalEvents = events.length;
+
+    res.json({ totalUsers, totalMentors, totalEvents, totalRsvps });
+  } catch (err) {
+    res.status(500).json({ message: 'Could not fetch stats', error: err.message });
+  }
+});
+
 // Mounted routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);

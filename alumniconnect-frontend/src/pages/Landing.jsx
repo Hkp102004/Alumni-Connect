@@ -1,76 +1,105 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/client';
 import './Landing.css';
+
+const FAQS = [
+  {
+    question: 'Is there a fee for students to join the mentorship program?',
+    answer: 'No, participation is completely free for all verified students and alumni of your institution.',
+  },
+  {
+    question: 'How do I find and request a mentor?',
+    answer: 'Browse the Alumni Directory, filter by industry or skills, and click "Request Mentorship" on any profile marked as mentor-available.',
+  },
+  {
+    question: 'Can I host virtual events on lumnus?',
+    answer: 'Yes — when creating an event you can instantly generate a Google Meet link right from the dashboard, no external tools needed.',
+  },
+  {
+    question: 'How quickly are mentorship requests answered?',
+    answer: 'Response time depends on the mentor\'s availability. You\'ll get a real-time notification the moment they accept or decline your request.',
+  },
+];
 
 export default function Landing() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFaq, setActiveFaq] = useState(null);
+  const [stats, setStats] = useState(null);
 
-  const toggleFaq = (index) => {
-    setActiveFaq(activeFaq === index ? null : index);
-  };
+  useEffect(() => {
+    api.get('/stats')
+      .then(res => setStats(res.data))
+      .catch(() => {});
+  }, []);
 
-  const handleSearchSubmit = (e) => {
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+
+  useEffect(() => {
+    api.get('/events')
+      .then(res => {
+        const now = new Date();
+        const upcoming = res.data
+          .filter(e => new Date(e.date) >= now)
+          .sort((a, b) => new Date(a.date) - new Date(b.date))
+          .slice(0, 3);
+        setUpcomingEvents(upcoming);
+      })
+      .catch(() => {});
+  }, []);
+
+  const toggleFaq = (i) => setActiveFaq(activeFaq === i ? null : i);
+
+  const handleSearch = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/directory?search=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      navigate('/directory');
-    }
+    navigate(searchQuery.trim() ? `/directory?search=${encodeURIComponent(searchQuery.trim())}` : '/directory');
   };
 
   return (
     <div className="landing">
-      {/* Vibrant Hero Banner */}
+
+      {/* ── HERO (original indigo banner) ── */}
       <div className="landing__hero-banner">
         <div className="landing__hero-container">
           <div className="landing__hero-left">
             <div className="landing__logo-badge">lumnus workspace</div>
             <h1 className="landing__hero-title">
-              Alumni & Prospects Engagement Stack built for <span className="underline-text">Success & Efficiency</span>
+              Alumni &amp; Prospects Engagement Stack built for <span className="underline-text">Success &amp; Efficiency</span>
             </h1>
             <p className="landing__hero-subtitle">
               Your professional mentorship and networking partner, grounded in the community you trust, built with modern directory features.
             </p>
-            
-            {/* Search Form */}
-            <form className="landing__search-form" onSubmit={handleSearchSubmit}>
+
+            <form className="landing__search-form" onSubmit={handleSearch}>
               <div className="landing__search-container">
-                <svg className="landing__search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                <svg className="landing__search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                <input 
-                  type="text" 
-                  className="landing__search-input" 
-                  placeholder="Search alumni by name, company, or skills..." 
+                <input
+                  type="text"
+                  className="landing__search-input"
+                  placeholder="Search alumni by name, company, or skills..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <button type="submit" className="btn-primary landing__search-btn">
-                  Search
-                </button>
+                <button type="submit" className="btn-primary landing__search-btn">Search</button>
               </div>
             </form>
 
             <div className="landing__actions">
               {!user && (
                 <>
-                  <Link to="/register" className="btn-primary-white">
-                    Join the Network
-                  </Link>
-                  <Link to="/login" className="btn-ghost-white">
-                    Sign in
-                  </Link>
+                  <Link to="/register" className="btn-primary-white">Join the Network</Link>
+                  <Link to="/login" className="btn-ghost-white">Sign in</Link>
                 </>
               )}
             </div>
           </div>
 
           <div className="landing__hero-right">
-            {/* Overlapping Avatar Mockup Grid with dotted bg */}
             <div className="avatar-grid-container">
               <div className="avatar-grid__dots" />
               <div className="avatar-grid__cell avatar-grid__cell--1">
@@ -96,390 +125,258 @@ export default function Landing() {
         </div>
       </div>
 
+      {/* ── STATS BAR ── */}
+      <div className="landing__stats-bar">
+        <div className="landing__stats-inner">
+          {[
+            { num: stats ? stats.totalUsers.toLocaleString() : '—',   suffix: '',  label: 'Alumni & students registered' },
+            { num: stats ? stats.totalMentors.toLocaleString() : '—', suffix: '',  label: 'Active mentors' },
+            { num: stats ? stats.totalEvents.toLocaleString() : '—',  suffix: '',  label: 'Events hosted' },
+            { num: stats ? stats.totalRsvps.toLocaleString() : '—',   suffix: '',  label: 'Total RSVPs' },
+          ].map((s) => (
+            <div key={s.label} className="landing__stat-item">
+              <span className="landing__stat-num">{s.num}<span>{s.suffix}</span></span>
+              <span className="landing__stat-label">{s.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── MAIN CONTENT ── */}
       <div className="landing__content">
 
+        {/* ── PORTALS ── */}
+        <section className="landing__portals">
+          <div className="landing__section-header">
+            <span className="landing__section-tag">Everything you need</span>
+            <h2 className="landing__section-title">One platform, every touchpoint</h2>
+            <p className="landing__section-sub">From finding a mentor to hosting a reunion — lumnus handles the entire alumni lifecycle.</p>
+          </div>
 
-
-        {/* Pathways Portal Section */}
-        <div className="landing__portals-section">
-          <h2 className="landing__portals-title">How can we help you today?</h2>
-          <p className="landing__portals-subtitle">Choose a pathway to get started with the lumnus community.</p>
-          
           <div className="landing__portals-grid">
             <Link to="/directory" className="landing__portal-card">
-              <div className="landing__portal-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
+              <div className="landing__portal-icon landing__portal-icon--blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
               </div>
               <h3>Alumni Directory</h3>
-              <p>Discover, search, and connect with graduates across every industry and batch.</p>
-              <span className="landing__portal-link">Browse directory →</span>
+              <p>Search and connect with graduates across every industry, batch, and location — all in seconds.</p>
+              <span className="landing__portal-arrow">Browse directory <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
             </Link>
 
             <Link to="/mentorship" className="landing__portal-card">
-              <div className="landing__portal-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                </svg>
+              <div className="landing__portal-icon landing__portal-icon--green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               </div>
               <h3>Mentorship Hub</h3>
-              <p>Connect with industry veterans for career coaching or share your expertise.</p>
-              <span className="landing__portal-link">Find a mentor →</span>
+              <p>Request career coaching from industry veterans or offer your expertise to the next generation.</p>
+              <span className="landing__portal-arrow">Find a mentor <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
             </Link>
 
             <Link to="/events" className="landing__portal-card">
-              <div className="landing__portal-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
+              <div className="landing__portal-icon landing__portal-icon--amber">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               </div>
-              <h3>Events & Meetups</h3>
-              <p>Stay updated with workshops, networking calls, and alumni webinars.</p>
-              <span className="landing__portal-link">View events →</span>
+              <h3>Events &amp; Meetups</h3>
+              <p>Host or attend reunions, webinars, and workshops. Generate Google Meet links in one click.</p>
+              <span className="landing__portal-arrow">View events <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
             </Link>
 
             <Link to="/opportunities" className="landing__portal-card">
-              <div className="landing__portal-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                </svg>
+              <div className="landing__portal-icon landing__portal-icon--rose">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
               </div>
               <h3>Opportunities</h3>
-              <p>Explore exclusive job recommendations, internships, and project openings.</p>
-              <span className="landing__portal-link">Explore jobs →</span>
+              <p>Explore exclusive jobs, internships, and project openings shared by your alumni network.</p>
+              <span className="landing__portal-arrow">Explore jobs <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
             </Link>
           </div>
+        </section>
+
+        {/* ── FEATURES ── */}
+        <div className="landing__features">
+
+          {/* Feature 1 — Profile */}
+          <div className="landing__feature-row">
+            <div className="landing__feature-text">
+              <span className="landing__feature-kicker">
+                <span className="landing__feature-kicker-line" />
+                Alumni Profiles
+              </span>
+              <h2>Your career story, professionally showcased</h2>
+              <p>Build a rich profile that highlights your company, batch, skills, and mentorship availability. Let students and recruiters discover your journey.</p>
+              <ul className="landing__feature-list">
+                <li><svg className="landing__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Verified student &amp; alumni status</li>
+                <li><svg className="landing__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Showcase skills, companies, and batch details</li>
+                <li><svg className="landing__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Toggle mentorship availability anytime</li>
+              </ul>
+              <Link to="/register" className="landing__feature-cta">
+                Create your profile
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </Link>
+            </div>
+
+            <div className="landing__feature-graphic">
+              <div className="feature-mockup fm-profile">
+                <div className="fm-profile__head">
+                  <div className="fm-profile__avatar">
+                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=80&q=80" alt="Amit Patel" />
+                  </div>
+                  <div>
+                    <p className="fm-profile__name">Amit Patel</p>
+                    <p className="fm-profile__role">Senior Software Engineer · Google</p>
+                  </div>
+                </div>
+                <p className="fm-profile__bio">"Happy to help with system design mock interviews, backend engineering paths, and resume reviews."</p>
+                <div className="fm-profile__tags">
+                  <span className="fm-badge fm-badge--blue">Batch 2020</span>
+                  <span className="fm-badge fm-badge--green">Mentor Available</span>
+                  <span className="fm-badge">Node.js</span>
+                  <span className="fm-badge">Distributed Systems</span>
+                </div>
+                <div className="fm-profile__footer">
+                  <div className="fm-profile__metric">
+                    <div className="fm-profile__metric-num">24</div>
+                    <div className="fm-profile__metric-label">Mentees</div>
+                  </div>
+                  <div className="fm-profile__metric">
+                    <div className="fm-profile__metric-num">8</div>
+                    <div className="fm-profile__metric-label">Events</div>
+                  </div>
+                  <div className="fm-profile__metric">
+                    <div className="fm-profile__metric-num">4.9</div>
+                    <div className="fm-profile__metric-label">Rating</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Feature 2 — Mentorship */}
+          <div className="landing__feature-row landing__feature-row--reverse">
+            <div className="landing__feature-graphic">
+              <div className="feature-mockup fm-mentor">
+                {[
+                  { label: 'Request Mentorship', active: true, badge: 'New' },
+                  { label: 'Schedule a Session', active: false, badge: null },
+                  { label: 'Send a Message', active: false, badge: null },
+                  { label: 'View Mentor Profile', active: false, badge: null },
+                ].map((item) => (
+                  <div key={item.label} className={`fm-mentor__item${item.active ? ' fm-mentor__item--active' : ''}`}>
+                    <div className="fm-mentor__icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
+                        <path d="M12 5v14M5 12h14"/>
+                      </svg>
+                    </div>
+                    <span className="fm-mentor__label">{item.label}</span>
+                    {item.badge && <span className="fm-mentor__badge">{item.badge}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="landing__feature-text">
+              <span className="landing__feature-kicker">
+                <span className="landing__feature-kicker-line" />
+                Mentorship
+              </span>
+              <h2>Find your guide in the industry</h2>
+              <p>Browse mentors by domain, send structured requests, and build real career connections with alumni who've been exactly where you are now.</p>
+              <ul className="landing__feature-list">
+                <li><svg className="landing__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Filter mentors by industry, company, or skill</li>
+                <li><svg className="landing__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Send structured mentorship requests directly</li>
+                <li><svg className="landing__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Real-time status notifications on every request</li>
+              </ul>
+              <Link to="/mentorship" className="landing__feature-cta">
+                Browse mentors
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </Link>
+            </div>
+          </div>
+
+          {/* Feature 3 — Events */}
+          <div className="landing__feature-row">
+            <div className="landing__feature-text">
+              <span className="landing__feature-kicker">
+                <span className="landing__feature-kicker-line" />
+                Events
+              </span>
+              <h2>Host world-class alumni events in minutes</h2>
+              <p>Schedule reunions, webinars, and networking sessions end-to-end — complete with RSVP tracking, attendee lists, and instant Google Meet link generation.</p>
+              <ul className="landing__feature-list">
+                <li><svg className="landing__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>One-click Google Meet link generation</li>
+                <li><svg className="landing__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>RSVP tracking with live attendee count</li>
+                <li><svg className="landing__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Filter by reunion, webinar, workshop, or networking</li>
+              </ul>
+              <Link to="/events" className="landing__feature-cta">
+                Explore events
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </Link>
+            </div>
+
+            <div className="landing__feature-graphic">
+              <div className="feature-mockup fm-events">
+                <div className="fm-events__header">
+                  <span className="fm-events__title">Upcoming Events</span>
+                  <span className="fm-events__dot" />
+                </div>
+                {upcomingEvents.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text-faint)', fontSize: '0.88rem' }}>
+                    No upcoming events yet
+                  </div>
+                ) : (
+                  upcomingEvents.map((ev) => {
+                    const d = new Date(ev.date);
+                    const month = d.toLocaleString('en', { month: 'short' }).toUpperCase();
+                    const day = d.getDate();
+                    const rsvpCount = ev.rsvps?.length || 0;
+                    const location = ev.location || 'Online';
+                    const type = ev.eventType
+                      ? ev.eventType.charAt(0).toUpperCase() + ev.eventType.slice(1)
+                      : 'Event';
+                    return (
+                      <div key={ev._id} className="fm-event-item">
+                        <div className="fm-event__date-box">
+                          <span className="fm-event__month">{month}</span>
+                          <span className="fm-event__day">{day}</span>
+                        </div>
+                        <div className="fm-event__info">
+                          <p className="fm-event__name">{ev.title}</p>
+                          <p className="fm-event__meta">{location} · {rsvpCount} going</p>
+                        </div>
+                        <span className="fm-event__pill">{type}</span>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+
         </div>
 
-        {/* Feature Section 1: Two Column Layout (Profile Mockup) */}
-        <div className="landing__feature-row">
-          <div className="landing__feature-text">
-            <div className="landing__feature-icon">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-              </svg>
-            </div>
-            <h2>Create your profile</h2>
-            <p>
-              Build a professional profile highlighting your current company, branch, and areas of expertise. Let students and recruiters discover your achievements.
-            </p>
-            <ul className="landing__feature-list">
-              <li>
-                <svg className="bullet-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                Verified student & alumni status
-              </li>
-              <li>
-                <svg className="bullet-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                Showcase skills, companies, and batch details
-              </li>
-              <li>
-                <svg className="bullet-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                Toggle mentorship availability anytime
-              </li>
-            </ul>
-          </div>
-          
-          <div className="landing__feature-graphic">
-            {/* Visual Profile Card Mockup */}
-            <div className="mockup-card profile-mockup">
-              <div className="profile-mockup__header">
-                <div className="profile-mockup__avatar">
-                  <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=80&q=80" alt="Amit Patel" />
-                </div>
-                <div className="profile-mockup__details">
-                  <h4>Amit Patel</h4>
-                  <p>Senior Software Engineer</p>
-                </div>
-              </div>
-              <div className="profile-mockup__body">
-                <p>Happy to help with resume reviews, backend engineering paths, and system design mock interviews.</p>
-              </div>
-              <div className="profile-mockup__footer">
-                <span className="mockup-badge">Batch 2020</span>
-                <span className="mockup-badge">Mentor Available</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Feature Section 2: Two Column Layout (Mentorship Actions Mockup) */}
-        <div className="landing__feature-row landing__feature-row--reverse">
-          <div className="landing__feature-graphic">
-            {/* Visual Action Mockup */}
-            <div className="mockup-card action-mockup">
-              <div className="action-mockup__item action-mockup__item--active">
-                <div className="action-mockup__icon">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 112-2h2a2 2 0 012 2"></path></svg>
-                </div>
-                <span>+ Request Mentorship</span>
-              </div>
-              <div className="action-mockup__item">
-                <div className="action-mockup__icon">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                </div>
-                <span>Schedule Session</span>
-              </div>
-              <div className="action-mockup__item">
-                <div className="action-mockup__icon">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                </div>
-                <span>Send Message</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="landing__feature-text">
-            <div className="landing__feature-icon">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-              </svg>
-            </div>
-            <h2>Find your next mentor</h2>
-            <p>
-              Browse mentors in your domain, request professional guidance, and build meaningful career connections. Start learning from industry veterans.
-            </p>
-            <ul className="landing__feature-list">
-              <li>
-                <svg className="bullet-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                Filter mentors by industry or company
-              </li>
-              <li>
-                <svg className="bullet-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                Send direct structured mentorship requests
-              </li>
-              <li>
-                <svg className="bullet-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                Real-time status updates on requests
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Feature Row A: LinkedIn Profile Sync */}
-        <div className="landing__feature-row">
-          <div className="landing__feature-text">
-            <div className="landing__feature-icon">
-              <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.8v8.37h2.8v-4.87c0-.26.05-.52.13-.7a1.11 1.11 0 0 1 .97-.7c.66 0 1.16.52 1.16 1.3v4.97h2.8M6.5 8.37a1.37 1.37 0 1 0 0-2.75 1.37 1.37 0 0 0 0 2.75M8 18.5V10.1H5.2v8.4H8z"></path>
-              </svg>
-            </div>
-            <h2>LinkedIn Profile Sync & Data Enrichment</h2>
-            <p>
-              Keep your alumni database continuously updated. Automatically sync member profiles with LinkedIn to track career path transitions, role updates, and company migrations without manual surveys.
-            </p>
-            <ul className="landing__feature-list">
-              <li>
-                <svg className="bullet-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                Automatic profile enrichment & data sync
-              </li>
-              <li>
-                <svg className="bullet-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                Sync career moves and current company tags
-              </li>
-              <li>
-                <svg className="bullet-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                LinkedIn social activity feeds integrated
-              </li>
-            </ul>
-          </div>
-          
-          <div className="landing__feature-graphic">
-            {/* Visual LinkedIn Connection Circle Mockup */}
-            <div className="mockup-card linkedin-sync-mockup">
-              <div className="linkedin-sync__central-badge">
-                <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                </svg>
-              </div>
-              <div className="linkedin-sync__node linkedin-sync__node--1">
-                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=80&q=80" alt="Alumni" />
-              </div>
-              <div className="linkedin-sync__node linkedin-sync__node--2">
-                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=80&q=80" alt="Alumni" />
-              </div>
-              <div className="linkedin-sync__node linkedin-sync__node--3">
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80" alt="Alumni" />
-              </div>
-              <div className="linkedin-sync__node linkedin-sync__node--4">
-                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80" alt="Alumni" />
-              </div>
-              <div className="linkedin-sync__node linkedin-sync__node--5">
-                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80" alt="Alumni" />
-              </div>
-              <div className="linkedin-sync__node linkedin-sync__node--6">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&q=80" alt="Alumni" />
-              </div>
-              {/* Central spinning or curved connection arrows */}
-              <div className="linkedin-sync__arrow-ring" />
-            </div>
-          </div>
-        </div>
-
-        {/* Feature Row B: Google Meet Integration */}
-        <div className="landing__feature-row landing__feature-row--reverse">
-          <div className="landing__feature-text">
-            <div className="landing__feature-icon">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-              </svg>
-            </div>
-            <h2>Online Alumni Events - End to End</h2>
-            <p>
-              Schedule, coordinate, and host online webinar sessions, professional panel workshops, or interactive homecoming events. Generate Google Meet links instantly within our dashboard.
-            </p>
-            <ul className="landing__feature-list">
-              <li>
-                <svg className="bullet-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                Google Meet link generation on event creation
-              </li>
-              <li>
-                <svg className="bullet-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                "Join Meet" buttons directly on calendar cards
-              </li>
-              <li>
-                <svg className="bullet-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                Complete RSVP, schedule alerts & attendee metrics
-              </li>
-            </ul>
-          </div>
-          
-          <div className="landing__feature-graphic">
-            {/* Visual Meet Video Grid Mockup */}
-            <div className="mockup-card video-grid-mockup">
-              <div className="video-grid__grid">
-                <div className="video-grid__cell cell--1">
-                  <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80" alt="Divya" />
-                  <span>Divya Sharma</span>
-                </div>
-                <div className="video-grid__cell cell--2">
-                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="Aarav" />
-                  <span>Aarav Patel</span>
-                </div>
-                <div className="video-grid__cell cell--3">
-                  <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=120&q=80" alt="Kunal" />
-                  <span>Kunal Verma</span>
-                </div>
-                <div className="video-grid__cell cell--4">
-                  <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80" alt="Neha" />
-                  <span>Neha Gupta</span>
-                </div>
-                <div className="video-grid__cell cell--5">
-                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80" alt="Rohan" />
-                  <span>Rohan Mehta</span>
-                </div>
-                <div className="video-grid__cell cell--6">
-                  <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80" alt="Pooja" />
-                  <span>Pooja Malhotra</span>
-                </div>
-              </div>
-              <div className="video-grid__controls">
-                <div className="control-btn control-btn--red" />
-                <div className="control-btn" />
-                <div className="control-btn" />
-                <div className="control-btn" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Feature Row C: Content & Customizations */}
-        <div className="landing__feature-row">
-          <div className="landing__feature-text">
-            <div className="landing__feature-icon">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
-              </svg>
-            </div>
-            <h2>Engagement Bulletins & Newsletters</h2>
-            <p>
-              Increase community participation. Compose targeted newsletters, highlight outstanding alumni achievements, and custom-segment announcement emails for specific batches, industries, or geographic chapters.
-            </p>
-            <ul className="landing__feature-list">
-              <li>
-                <svg className="bullet-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                "Alumni in News" bulletin boards & highlights
-              </li>
-              <li>
-                <svg className="bullet-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                Customizable newsletter templates & automation
-              </li>
-              <li>
-                <svg className="bullet-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                Dedicated support channels and custom settings
-              </li>
-            </ul>
-          </div>
-          
-          <div className="landing__feature-graphic">
-            {/* Visual Bulletin Mockup */}
-            <div className="mockup-card bulletin-mockup">
-              <div className="bulletin-mockup__header">
-                <h5>Alumni in News</h5>
-                <span>7d ago</span>
-              </div>
-              <div className="bulletin-mockup__profile">
-                <div className="bulletin-mockup__avatar">
-                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80" alt="Aidan" />
-                </div>
-                <div>
-                  <h6>Aditya Sen</h6>
-                  <p>CEO/Founder of FinScale</p>
-                </div>
-              </div>
-              <div className="bulletin-mockup__article">
-                <h6>FinScale raises $2M from Mars Growth Capital</h6>
-                <p>Alumnus Aditya Sen stated, "It's exciting to see venture funding backing local innovation."</p>
-              </div>
-              <div className="bulletin-mockup__actions">
-                <button type="button" className="mockup-btn">Share via Email</button>
-                <button type="button" className="mockup-btn mockup-btn--active">Save to CRM</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* FAQ Section */}
-        <div className="landing__faq">
+        {/* ── FAQ ── */}
+        <section className="landing__faq">
           <div className="landing__faq-left">
-            <span className="landing__faq-tag">FAQ'S</span>
-            <h2 className="landing__faq-title">Find the answer to your common questions</h2>
-            <Link to="/profile" className="btn-ghost landing__faq-cta">
-              Connect with Us
-              <svg className="landing__faq-cta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.3" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-              </svg>
+            <span className="landing__section-tag">FAQs</span>
+            <h2>Got questions?<br />We've got answers.</h2>
+            <p>Can't find what you're looking for? Reach out through your profile and our team will get back to you.</p>
+            <Link to="/contact" className="landing__faq-cta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Contact us
             </Link>
           </div>
-          
+
           <div className="landing__faq-right">
-            {[
-              {
-                question: "Is there a fee for students to participate in the mentorship program?",
-                answer: "No, participation is completely free for verified students and alumni of our institution."
-              },
-              {
-                question: "How are mentors selected for students?",
-                answer: "Students can browse the directory, filter by field or interest, and request a mentor who aligns with their goals."
-              },
-              {
-                question: "Can I request a specific mentor?",
-                answer: "Yes. You can request any verified alumnus who has marked themselves as an active mentor in their profile."
-              },
-              {
-                question: "How long does it take to get matched with a mentor?",
-                answer: "It depends on the mentor's availability. Once you send a request, they will receive a notification and can accept or decline the request."
-              }
-            ].map((faq, idx) => (
-              <div 
-                key={idx} 
-                className={`landing__faq-item ${activeFaq === idx ? 'landing__faq-item--active' : ''}`}
-                onClick={() => toggleFaq(idx)}
+            {FAQS.map((faq, i) => (
+              <div
+                key={i}
+                className={`landing__faq-item${activeFaq === i ? ' landing__faq-item--active' : ''}`}
+                onClick={() => toggleFaq(i)}
               >
                 <div className="landing__faq-question">
                   <h3>{faq.question}</h3>
-                  <svg className="landing__faq-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path>
+                  <svg className="landing__faq-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 9l6 6 6-6"/>
                   </svg>
                 </div>
                 <div className="landing__faq-answer">
@@ -490,9 +387,31 @@ export default function Landing() {
               </div>
             ))}
           </div>
-        </div>
-      </div>
+        </section>
 
+        {/* ── CTA BANNER ── */}
+        <div className="landing__cta-banner">
+          <div className="landing__cta-banner-text">
+            <h2>Ready to reconnect with your alumni network?</h2>
+            <p>Join thousands of alumni and students already building careers and communities on lumnus.</p>
+          </div>
+          <div className="landing__cta-banner-actions">
+            {user ? (
+              <Link to="/directory" className="btn-primary-white" style={{borderRadius:'12px'}}>
+                Go to Directory →
+              </Link>
+            ) : (
+              <>
+                <Link to="/register" className="btn-primary-white" style={{borderRadius:'12px'}}>
+                  Create free account →
+                </Link>
+                <Link to="/login" className="btn-ghost-white" style={{borderRadius:'12px'}}>Sign in</Link>
+              </>
+            )}
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 }
