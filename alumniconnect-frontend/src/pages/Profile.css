@@ -702,37 +702,34 @@
 }
 
 /* ── Avatar Actions ── */
-.profile-sidebar__avatar-actions {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+.profile-sidebar__avatar-container {
   display: flex;
-  justify-content: center;
-  gap: 4px;
-  padding: 4px;
-  background: rgba(15, 23, 42, 0.85);
-  transition: opacity 0.2s ease;
-  border-radius: 0 0 50% 50%;
-}
-
-.profile-sidebar__avatar-delete-btn {
-  background: rgba(225, 29, 72, 0.85);
-  color: #ffffff;
-  border: none;
-  border-radius: 9999px;
-  padding: 3px 8px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 3px;
-  cursor: pointer;
-  transition: background 0.15s ease;
+  gap: 10px;
+  width: 100%;
 }
 
-.profile-sidebar__avatar-delete-btn:hover {
-  background: #e11d48;
+.profile-sidebar__avatar-remove-btn {
+  background: transparent;
+  border: 1px solid #fee2e2;
+  color: #ef4444;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: #fef2f2;
+}
+
+.profile-sidebar__avatar-remove-btn:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
 }
 
 /* ── Resume / CV Card ── */

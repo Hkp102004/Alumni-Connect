@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import api from '../api/client';
 import './Directory.css';
@@ -170,18 +171,18 @@ export default function Directory() {
           <h1 className="dir-hero__title">Alumni Directory</h1>
           <p className="dir-hero__sub">Discover graduates and students across every batch and branch.</p>
         </div>
-        <div class="dir-hero__stats">
-          <div class="dir-stat">
-            <span class="dir-stat__num">{users.length}</span>
-            <span class="dir-stat__label">Total members</span>
+        <div className="dir-hero__stats">
+          <div className="dir-stat">
+            <span className="dir-stat__num">{users.length}</span>
+            <span className="dir-stat__label">Total members</span>
           </div>
-          <div class="dir-stat">
-            <span class="dir-stat__num">{alumniCount}</span>
-            <span class="dir-stat__label">Alumni</span>
+          <div className="dir-stat">
+            <span className="dir-stat__num">{alumniCount}</span>
+            <span className="dir-stat__label">Alumni</span>
           </div>
-          <div class="dir-stat">
-            <span class="dir-stat__num">{studentCount}</span>
-            <span class="dir-stat__label">Students</span>
+          <div className="dir-stat">
+            <span className="dir-stat__num">{studentCount}</span>
+            <span className="dir-stat__label">Students</span>
           </div>
         </div>
       </section>

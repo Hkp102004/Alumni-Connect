@@ -270,11 +270,11 @@ export default function Profile() {
         {/* ── LEFT SIDEBAR ── */}
         <aside className="profile-sidebar">
 
-          {/* Avatar (above card, overlapping banner) */}
-          <div className="profile-sidebar__avatar-wrap">
-            <img src={avatarSrc} alt={form.name} className="profile-sidebar__avatar" />
-            <div className="profile-sidebar__avatar-actions">
-              <label className="profile-sidebar__avatar-upload-btn" title="Upload and adjust photo">
+          {/* Avatar Container */}
+          <div className="profile-sidebar__avatar-container">
+            <div className="profile-sidebar__avatar-wrap">
+              <img src={avatarSrc} alt={form.name} className="profile-sidebar__avatar" />
+              <label className="profile-sidebar__avatar-upload-btn" title="Upload new photo">
                 <input
                   type="file"
                   accept="image/*"
@@ -282,29 +282,29 @@ export default function Profile() {
                   disabled={uploadingAvatar}
                   style={{ display: 'none' }}
                 />
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="18" height="18">
                   <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
                   <circle cx="12" cy="13" r="4"/>
                 </svg>
                 <span>{uploadingAvatar ? 'Uploading...' : 'Adjust / Upload'}</span>
               </label>
-
-              {form.avatarUrl && (
-                <button
-                  type="button"
-                  onClick={handleRemoveAvatar}
-                  className="profile-sidebar__avatar-delete-btn"
-                  title="Remove profile photo"
-                  disabled={uploadingAvatar}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
-                    <polyline points="3 6 5 6 21 6"/>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                  </svg>
-                  Remove
-                </button>
-              )}
             </div>
+
+            {form.avatarUrl && (
+              <button
+                type="button"
+                onClick={handleRemoveAvatar}
+                className="profile-sidebar__avatar-remove-btn"
+                title="Remove profile photo"
+                disabled={uploadingAvatar}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+                Remove photo
+              </button>
+            )}
           </div>
 
           {/* White card */}
