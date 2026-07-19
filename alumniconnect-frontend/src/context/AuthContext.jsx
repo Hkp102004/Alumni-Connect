@@ -57,10 +57,26 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = async (role) => {
     const result = await signInWithPopup(auth, googleProvider);
     const firebaseIdToken = await result.user.getIdToken();
-    const res = await api.post('/auth/firebase-login', { token: firebaseIdToken });
+    const res = await api.post('/auth/firebase-login', { token: firebaseIdToken, role });
+
+    // Backend signals that this is a new user and needs a role selection
+    if (res.status === 202 && res.data?.needsRole) {
+      const err = new Error('NEEDS_ROLE');
+      err.needsRole = true;
+      err.firebaseIdToken = firebaseIdToken;
+      throw err;
+    }
+
+    localStorage.setItem('ac_token', res.data.token);
+    setUser(res.data);
+    return res.data;
+  };
+
+  const loginWithGoogleAndRole = async (firebaseIdToken, role, batch) => {
+    const res = await api.post('/auth/firebase-login', { token: firebaseIdToken, role, batch });
     localStorage.setItem('ac_token', res.data.token);
     setUser(res.data);
     return res.data;
@@ -135,7 +151,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, login, loginWithGoogle, register, logout, resetPassword, loading }}>
+    <AuthContext.Provider value={{ user, setUser, login, loginWithGoogle, loginWithGoogleAndRole, register, logout, resetPassword, loading }}>
       {children}
     </AuthContext.Provider>
   );

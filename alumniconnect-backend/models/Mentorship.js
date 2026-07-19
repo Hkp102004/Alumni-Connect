@@ -21,8 +21,14 @@ const mentorshipSchema = new mongoose.Schema(
     },
     meetingLink: { type: String, trim: true, default: '' },
     sessionsLog: [sessionLogSchema],
+    releaseRequest: {
+      type: String,
+      enum: ['none', 'pending', 'accepted'],
+      default: 'none',
+    },
   },
   { timestamps: true }
 );
 
 module.exports = mongoose.model('Mentorship', mentorshipSchema);
+

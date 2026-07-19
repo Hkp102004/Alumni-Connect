@@ -70,7 +70,7 @@ const getMe = async (req, res) => {
 // @route  POST /api/auth/firebase-login
 const firebaseLogin = async (req, res) => {
   try {
-    const { token } = req.body;
+    const { token, role, batch } = req.body;
     if (!token) {
       return res.status(400).json({ message: 'Token is required' });
     }
@@ -82,13 +82,18 @@ const firebaseLogin = async (req, res) => {
 
     let user = await User.findOne({ email: decoded.email });
     if (!user) {
-      // Create new user automatically (simulate sign-up from Google)
+      // New Google user — role must be provided by the frontend
+      if (!role || !['student', 'alumni'].includes(role)) {
+        // Signal to the frontend that role selection is needed
+        return res.status(202).json({ needsRole: true, email: decoded.email });
+      }
       const randomPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10);
       user = await User.create({
         name: decoded.name || decoded.email.split('@')[0],
         email: decoded.email,
         password: randomPassword,
-        role: 'student'
+        role: role || 'student',
+        batch: batch || '',
       });
     }
 
@@ -103,6 +108,7 @@ const firebaseLogin = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
 
 // @route  POST /api/auth/firebase-register
 const firebaseRegister = async (req, res) => {

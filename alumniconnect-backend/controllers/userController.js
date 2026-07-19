@@ -53,21 +53,16 @@ const getUsers = async (req, res) => {
 };
 
 // @route  GET /api/users/mentors
-// @desc   List all users who opted in as mentors (only lists mentors with complete profiles)
+// @desc   List all users who opted in as mentors
 const getMentors = async (req, res) => {
   try {
     const { expertise } = req.query;
-    
+
+    // Only require mentor flag + company + designation (enough to show in exploration cards)
     const queryConditions = [
       { isMentor: true },
-      { name: { $exists: true, $ne: '' } },
-      { batch: { $exists: true, $ne: '' } },
-      { branch: { $exists: true, $ne: '' } },
-      { bio: { $exists: true, $ne: '' } },
-      { location: { $exists: true, $ne: '' } },
-      { skills: { $exists: true, $not: { $size: 0 } } },
       { company: { $exists: true, $ne: '' } },
-      { designation: { $exists: true, $ne: '' } }
+      { designation: { $exists: true, $ne: '' } },
     ];
 
     if (expertise) {
@@ -77,7 +72,8 @@ const getMentors = async (req, res) => {
     }
 
     const filter = { $and: queryConditions };
-    const mentors = await User.find(filter).select('-password');
+    // Return only public-facing fields for mentor cards
+    const mentors = await User.find(filter).select('name company designation mentorExpertise avatarUrl location');
     res.json(mentors);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -102,7 +98,7 @@ const updateProfile = async (req, res) => {
     const allowedFields = [
       'name', 'batch', 'branch', 'company', 'designation',
       'location', 'bio', 'skills', 'avatarUrl', 'linkedinUrl', 'githubUrl',
-      'isMentor', 'mentorExpertise',
+      'isMentor', 'mentorExpertise', 'phone',
     ];
 
     const updates = {};

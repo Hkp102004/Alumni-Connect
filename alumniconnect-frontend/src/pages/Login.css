@@ -316,3 +316,189 @@
 .reset-back-btn:hover {
   opacity: 0.8;
 }
+
+/* ─── Role Selection Modal ─── */
+.role-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
+  padding: 24px;
+  animation: role-backdrop-in 0.2s ease;
+}
+
+@keyframes role-backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.role-modal-card {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 40px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: role-card-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes role-card-in {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.role-modal-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--blue);
+  text-transform: lowercase;
+  letter-spacing: -0.04em;
+}
+
+.role-modal-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  text-align: center;
+  letter-spacing: -0.02em;
+}
+
+.role-modal-subtitle {
+  font-size: 0.9rem;
+  color: #64748b;
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.role-tab-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.role-tab-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+  text-align: left;
+  width: 100%;
+  position: relative;
+}
+
+.role-tab-card:hover {
+  border-color: var(--blue);
+  background: #eff6ff;
+}
+
+.role-tab-card--active {
+  border-color: var(--blue) !important;
+  background: #eff6ff !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.role-tab-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.role-tab-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.role-tab-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.role-tab-desc {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.role-tab-check {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.18s ease, transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.role-tab-check--visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@media (max-width: 500px) {
+  .role-modal-card {
+    padding: 28px 20px;
+    border-radius: 20px;
+  }
+}
+
+/* Batch input inside role modal */
+.role-batch-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 16px;
+  background: #f0f9ff;
+  border: 1.5px solid #bae6fd;
+  border-radius: 12px;
+  animation: role-backdrop-in 0.15s ease;
+}
+
+.role-batch-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0369a1;
+  letter-spacing: 0.01em;
+}
+
+.role-batch-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0f172a;
+  font-family: var(--font-body);
+  width: 100%;
+}
+
+.role-batch-input::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+
