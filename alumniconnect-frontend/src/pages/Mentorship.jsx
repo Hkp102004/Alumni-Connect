@@ -316,6 +316,16 @@ export default function Mentorship() {
     }
   };
 
+  const handleWithdrawMentorship = async (id) => {
+    if (!window.confirm('Are you sure you want to withdraw this mentorship request?')) return;
+    try {
+      await api.delete(`/mentorships/${id}`);
+      loadData();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Could not withdraw mentorship request');
+    }
+  };
+
   return (
     <div className="ms-page">
       {/* ── Hero ── */}
@@ -664,10 +674,18 @@ export default function Mentorship() {
                 </div>
                 <div className="ms-mdc__pending-notice">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                  <div>
+                  <div style={{ flex: 1 }}>
                     <strong>Request pending</strong>
                     <p>Waiting for {pendingMentorship.mentor?.name} to accept your request.</p>
                   </div>
+                  <button
+                    type="button"
+                    className="ms-btn ms-btn--outline"
+                    onClick={() => handleWithdrawMentorship(pendingMentorship._id)}
+                    style={{ color: '#e11d48', borderColor: '#fecdd3', background: '#fff1f2' }}
+                  >
+                    Withdraw Request
+                  </button>
                 </div>
               </div>
             ) : (

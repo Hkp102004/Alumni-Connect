@@ -52,6 +52,28 @@ const respondToRequest = async (req, res) => {
   }
 };
 
+// @route  DELETE /api/connections/:id (or POST /api/connections/withdraw/:id)
+// @desc   Withdraw a pending connection request
+const withdrawRequest = async (req, res) => {
+  try {
+    const connection = await Connection.findById(req.params.id);
+    if (!connection) return res.status(404).json({ message: 'Connection request not found' });
+
+    if (String(connection.fromUser) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Only the sender can withdraw this connection request' });
+    }
+
+    if (connection.status !== 'pending') {
+      return res.status(400).json({ message: 'Only pending requests can be withdrawn' });
+    }
+
+    await Connection.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Connection request withdrawn successfully', _id: req.params.id });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 // @route  GET /api/connections/me
 // @desc   List logged-in user's connections, optional ?status=
 const getMyConnections = async (req, res) => {
@@ -72,4 +94,4 @@ const getMyConnections = async (req, res) => {
   }
 };
 
-module.exports = { sendRequest, respondToRequest, getMyConnections };
+module.exports = { sendRequest, respondToRequest, withdrawRequest, getMyConnections };

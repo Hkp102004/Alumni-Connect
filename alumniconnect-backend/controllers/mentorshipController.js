@@ -58,6 +58,28 @@ const updateMentorshipStatus = async (req, res) => {
   }
 };
 
+// @route  DELETE /api/mentorships/:id (or POST /api/mentorships/withdraw/:id)
+// @desc   Mentee withdraws a pending mentorship request
+const withdrawMentorshipRequest = async (req, res) => {
+  try {
+    const mentorship = await Mentorship.findById(req.params.id);
+    if (!mentorship) return res.status(404).json({ message: 'Mentorship request not found' });
+
+    if (String(mentorship.mentee) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Only the mentee can withdraw this mentorship request' });
+    }
+
+    if (mentorship.status !== 'pending') {
+      return res.status(400).json({ message: 'Only pending requests can be withdrawn' });
+    }
+
+    await Mentorship.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Mentorship request withdrawn successfully', _id: req.params.id });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 // @route  POST /api/mentorships/:id/sessions
 // @desc   Log a mentorship session
 const addSessionLog = async (req, res) => {
@@ -153,6 +175,7 @@ const acceptRelease = async (req, res) => {
 module.exports = {
   requestMentorship,
   updateMentorshipStatus,
+  withdrawMentorshipRequest,
   addSessionLog,
   getMyMentorships,
   requestRelease,

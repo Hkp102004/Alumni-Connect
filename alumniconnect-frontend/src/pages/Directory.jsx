@@ -92,6 +92,16 @@ export default function Directory() {
     }
   };
 
+  const handleWithdrawClick = async (connectionId) => {
+    try {
+      await api.delete(`/connections/${connectionId}`);
+      const connRes = await api.get('/connections/me');
+      setConnections(connRes.data);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Could not withdraw request');
+    }
+  };
+
   const alumniCount = users.filter(u => u.role === 'alumni').length;
   const studentCount = users.filter(u => u.role === 'student').length;
 
@@ -117,7 +127,18 @@ export default function Directory() {
     }
     if (connInfo.status === 'pending') {
       if (connInfo.fromUser === user?._id) {
-        return <span className="dir-status-pill dir-status-pill--pending">Pending</span>;
+        return (
+          <div className="dir-respond-row" onClick={(e) => e.stopPropagation()}>
+            <span className="dir-status-pill dir-status-pill--pending">Pending</span>
+            <button
+              className={`${btnClass} dir-btn--withdraw`}
+              onClick={(e) => { e.stopPropagation(); handleWithdrawClick(connInfo.id); }}
+              title="Withdraw pending connection request"
+            >
+              Withdraw
+            </button>
+          </div>
+        );
       }
       return (
         <div className="dir-respond-row" onClick={(e) => e.stopPropagation()}>
