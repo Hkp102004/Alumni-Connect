@@ -625,7 +625,13 @@
   .ev-hero__stats {
     width: 100%;
     justify-content: space-around;
-    gap: 16px;
+    gap: 12px;
+  }
+  .ev-stat__number {
+    font-size: 1.5rem;
+  }
+  .ev-stat__label {
+    font-size: 0.68rem;
   }
   .ev-toolbar {
     flex-direction: column;
