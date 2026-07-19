@@ -6,8 +6,8 @@ const getUsers = async (req, res) => {
   try {
     const { batch, branch, company, skills, role, search } = req.query;
 
-    // Show everyone who signed up (excluding admins)
-    const filter = { role: { $ne: 'admin' } };
+    // Show everyone who signed up (excluding admins and deactivated users)
+    const filter = { role: { $ne: 'admin' }, isActive: { $ne: false } };
 
     if (role) filter.role = role;
     if (batch) filter.batch = new RegExp(batch, 'i');
@@ -49,6 +49,7 @@ const getMentors = async (req, res) => {
       { isMentor: true },
       { company: { $exists: true, $ne: '' } },
       { designation: { $exists: true, $ne: '' } },
+      { isActive: { $ne: false } },
     ];
 
     if (expertise) {
@@ -84,7 +85,7 @@ const updateProfile = async (req, res) => {
     const allowedFields = [
       'name', 'batch', 'branch', 'company', 'designation',
       'location', 'bio', 'skills', 'avatarUrl', 'resumeUrl', 'resumeName', 'linkedinUrl', 'githubUrl',
-      'isMentor', 'mentorExpertise', 'phone',
+      'isMentor', 'mentorExpertise', 'phone', 'isActive',
     ];
 
     const updates = {};
@@ -103,4 +104,48 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = { getUsers, getMentors, getUserById, updateProfile };
+// @route  DELETE /api/users/me
+// @desc   Delete user's own profile and all associated data
+const deleteProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const Connection = require('../models/Connection');
+    const Mentorship = require('../models/Mentorship');
+    const Opportunity = require('../models/Opportunity');
+    const Event = require('../models/Event');
+
+    // 1. Delete connection requests
+    await Connection.deleteMany({
+      $or: [{ fromUser: userId }, { toUser: userId }]
+    });
+
+    // 2. Delete mentorship sessions
+    await Mentorship.deleteMany({
+      $or: [{ mentor: userId }, { mentee: userId }]
+    });
+
+    // 3. Delete posted opportunities and applications
+    await Opportunity.deleteMany({ postedBy: userId });
+    await Opportunity.updateMany(
+      {},
+      { $pull: { applicants: { user: userId } } }
+    );
+
+    // 4. Delete organized events and RSVPs
+    await Event.deleteMany({ organizer: userId });
+    await Event.updateMany(
+      {},
+      { $pull: { rsvps: { user: userId } } }
+    );
+
+    // 5. Delete user profile
+    await User.findByIdAndDelete(userId);
+
+    res.json({ message: 'Profile deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+module.exports = { getUsers, getMentors, getUserById, updateProfile, deleteProfile };

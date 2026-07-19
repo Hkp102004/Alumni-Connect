@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema(
     phone: { type: String, trim: true, default: '' },
     isMentor: { type: Boolean, default: false }, // alumni opting in as mentors
     mentorExpertise: [{ type: String, trim: true }],
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

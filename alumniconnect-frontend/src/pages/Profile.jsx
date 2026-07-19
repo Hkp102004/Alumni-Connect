@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
 import ImageAdjustModal from '../components/ImageAdjustModal';
@@ -9,7 +10,8 @@ const DEFAULT_BANNER =
 const DEFAULT_AVATAR = 'https://ui-avatars.com/api/?background=0052cc&color=fff&size=128&bold=true&name=';
 
 export default function Profile() {
-  const { user, setUser } = useAuth();
+  const { user, setUser, logout } = useAuth();
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     name:            user?.name             || '',
@@ -28,6 +30,7 @@ export default function Profile() {
     githubUrl:       user?.githubUrl        || '',
     isMentor:        user?.isMentor         || false,
     mentorExpertise: (user?.mentorExpertise || []).join(', '),
+    isActive:        user?.isActive         !== false,
   });
 
   const [saved,           setSaved]           = useState(false);
@@ -37,6 +40,10 @@ export default function Profile() {
   const [selectedCropFile,setSelectedCropFile]= useState(null);
   const [error,           setError]           = useState('');
   const [activeSection,   setActiveSection]   = useState('overview');
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting,          setDeleting]          = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -206,6 +213,28 @@ export default function Profile() {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') {
+      setError('Please type DELETE to confirm account deletion.');
+      return;
+    }
+
+    setDeleting(true);
+    setError('');
+
+    try {
+      await api.delete('/users/me');
+      logout();
+      navigate('/login', { state: { infoMessage: 'Your account has been deleted successfully.' } });
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || 'Could not delete account.');
+      setShowDeleteModal(false);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (!user) return null;
 
   /* ── Completeness ── */
@@ -235,6 +264,7 @@ export default function Profile() {
     { id: 'professional', label: 'Professional'    },
     { id: 'links',        label: 'Links & Skills'  },
     ...(user.role === 'alumni' ? [{ id: 'mentorship', label: 'Mentorship' }] : []),
+    { id: 'settings',     label: 'Account Settings' },
   ];
 
   /* Save button shared across sections */
@@ -706,9 +736,105 @@ export default function Profile() {
               </div>
             )}
 
+            {/* ── ACCOUNT SETTINGS ── */}
+            {activeSection === 'settings' && (
+              <div className="profile-section">
+                <div className="profile-section__head">
+                  <h2 className="profile-section__title">Account Settings</h2>
+                  <p className="profile-section__sub">Manage your profile visibility and account status.</p>
+                </div>
+
+                <div className="profile-settings-group">
+                  <h3 className="profile-settings-group__title">Profile Visibility</h3>
+                  <p className="profile-settings-group__desc">
+                    Control whether your profile is shown in the directory, mentors lists, and opportunities applicants.
+                  </p>
+                  
+                  <label className={`profile-toggle${form.isActive ? ' profile-toggle--active' : ''}`}>
+                    <input
+                      type="checkbox"
+                      name="isActive"
+                      checked={form.isActive}
+                      onChange={handleChange}
+                      className="profile-toggle__input"
+                    />
+                    <div className="profile-toggle__track">
+                      <div className="profile-toggle__thumb" />
+                    </div>
+                    <div className="profile-toggle__label">
+                      <span className="profile-toggle__title">Show Profile (Active)</span>
+                      <span className="profile-toggle__desc">
+                        When unchecked, your profile is hidden from the directory, mentor recommendations, and other public areas. You can reactivate anytime.
+                      </span>
+                    </div>
+                  </label>
+                  
+                  <SaveBtn />
+                </div>
+
+                <div className="profile-settings-group profile-settings-group--danger">
+                  <h3 className="profile-settings-group__title">Danger Zone</h3>
+                  <p className="profile-settings-group__desc">
+                    Permanently delete your profile and all associated data. This action cannot be undone.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeleteConfirmText('');
+                      setShowDeleteModal(true);
+                    }}
+                    className="profile-btn-danger"
+                  >
+                    Delete Account
+                  </button>
+                </div>
+              </div>
+            )}
+
           </form>
         </main>
       </div>
+
+      {/* ── Double Confirmation Delete Modal ── */}
+      {showDeleteModal && (
+        <div className="profile-delete-overlay">
+          <div className="profile-delete-modal">
+            <h3 className="profile-delete-modal__title">Delete Your Account?</h3>
+            <p className="profile-delete-modal__desc">
+              This will permanently delete your profile, connections, events, job opportunities, and mentorship requests.
+              <strong> This action is irreversible.</strong>
+            </p>
+            <div className="profile-delete-modal__confirm-box">
+              <label>Please type <span className="profile-delete-modal__code">DELETE</span> to confirm:</label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="Type DELETE"
+                className="profile-input"
+              />
+            </div>
+            <div className="profile-delete-modal__actions">
+              <button
+                type="button"
+                className="profile-delete-modal__btn-cancel"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="profile-delete-modal__btn-confirm"
+                onClick={handleDeleteAccount}
+                disabled={deleting || deleteConfirmText !== 'DELETE'}
+              >
+                {deleting ? 'Deleting Account...' : 'Permanently Delete Account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

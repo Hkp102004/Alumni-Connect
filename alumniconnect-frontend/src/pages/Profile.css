@@ -907,3 +907,169 @@
   color: #64748b;
 }
 
+/* ── Account Settings & Danger Zone ── */
+.profile-settings-group {
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.profile-settings-group__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+
+.profile-settings-group__desc {
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+.profile-settings-group--danger {
+  border-color: #fca5a5;
+  background: #fff5f5;
+}
+
+.profile-settings-group--danger .profile-settings-group__title {
+  color: #c53030;
+}
+
+.profile-btn-danger {
+  background: #dc2626;
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.profile-btn-danger:hover {
+  background: #b91c1c;
+}
+
+/* ── Double Confirmation Delete Modal ── */
+.profile-delete-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: profile-fade-in 0.2s ease-out;
+  padding: 20px;
+}
+
+.profile-delete-modal {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 32px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: var(--shadow-md);
+  animation: profile-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.profile-delete-modal__title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #c53030;
+  margin: 0 0 12px;
+}
+
+.profile-delete-modal__desc {
+  font-size: 0.92rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin: 0 0 20px;
+}
+
+.profile-delete-modal__desc strong {
+  color: #c53030;
+}
+
+.profile-delete-modal__confirm-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.profile-delete-modal__confirm-box label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.profile-delete-modal__code {
+  font-family: monospace;
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.profile-delete-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.profile-delete-modal__btn-cancel {
+  background: var(--surface-alt);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile-delete-modal__btn-cancel:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+.profile-delete-modal__btn-confirm {
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile-delete-modal__btn-confirm:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.profile-delete-modal__btn-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes profile-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes profile-slide-up {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
