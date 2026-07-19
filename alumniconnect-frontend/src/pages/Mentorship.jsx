@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import './Mentorship.css';
 import FaqSection from '../components/FaqSection';
 import MeetingModal from '../components/MeetingModal';
@@ -205,6 +206,7 @@ function RequestModal({ mentor, onClose, onSuccess }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Mentorship() {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const isAlumni = user?.role === 'alumni';
 
   const [mentors, setMentors] = useState([]);
@@ -290,8 +292,9 @@ export default function Mentorship() {
     try {
       await api.put(`/mentorships/${id}/status`, { status: 'active' });
       loadData();
+      showToast('Mentorship request accepted successfully!', 'success');
     } catch (err) {
-      alert(err.response?.data?.message || 'Could not accept');
+      showToast(err.response?.data?.message || 'Could not accept request', 'error');
     }
   };
 
@@ -299,8 +302,9 @@ export default function Mentorship() {
     try {
       await api.put(`/mentorships/${id}/status`, { status: 'declined' });
       loadData();
+      showToast('Mentorship request declined.', 'info');
     } catch (err) {
-      alert(err.response?.data?.message || 'Could not decline');
+      showToast(err.response?.data?.message || 'Could not decline request', 'error');
     }
   };
 
@@ -309,8 +313,9 @@ export default function Mentorship() {
     try {
       await api.put(`/mentorships/${id}/release`);
       loadData();
+      showToast('Release request sent to your mentor!', 'success');
     } catch (err) {
-      alert(err.response?.data?.message || 'Could not send release request');
+      showToast(err.response?.data?.message || 'Could not send release request', 'error');
     }
   };
 
@@ -319,8 +324,9 @@ export default function Mentorship() {
     try {
       await api.put(`/mentorships/${id}/release/accept`);
       loadData();
+      showToast('Student successfully released from mentorship!', 'success');
     } catch (err) {
-      alert(err.response?.data?.message || 'Could not accept release');
+      showToast(err.response?.data?.message || 'Could not accept release', 'error');
     }
   };
 
@@ -329,8 +335,9 @@ export default function Mentorship() {
     try {
       await api.delete(`/mentorships/${id}`);
       loadData();
+      showToast('Mentorship request withdrawn successfully.', 'info');
     } catch (err) {
-      alert(err.response?.data?.message || 'Could not withdraw mentorship request');
+      showToast(err.response?.data?.message || 'Could not withdraw mentorship request', 'error');
     }
   };
 

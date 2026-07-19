@@ -4,10 +4,12 @@ import { useSearchParams } from 'react-router-dom';
 import api from '../api/client';
 import './Directory.css';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import FaqSection from '../components/FaqSection';
 
 export default function Directory() {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [users, setUsers] = useState([]);
   const [connections, setConnections] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -78,8 +80,9 @@ export default function Directory() {
       await api.post('/connections', { toUser: toUserId });
       const connRes = await api.get('/connections/me');
       setConnections(connRes.data);
+      showToast('Connection request sent!', 'success');
     } catch (err) {
-      alert(err.response?.data?.message || 'Could not send connection request');
+      showToast(err.response?.data?.message || 'Could not send connection request', 'error');
     }
   };
 
@@ -88,8 +91,9 @@ export default function Directory() {
       await api.put(`/connections/${connectionId}`, { status });
       const connRes = await api.get('/connections/me');
       setConnections(connRes.data);
+      showToast(`Connection request ${status}!`, 'success');
     } catch (err) {
-      alert(err.response?.data?.message || 'Could not respond to request');
+      showToast(err.response?.data?.message || 'Could not respond to request', 'error');
     }
   };
 
@@ -98,8 +102,9 @@ export default function Directory() {
       await api.delete(`/connections/${connectionId}`);
       const connRes = await api.get('/connections/me');
       setConnections(connRes.data);
+      showToast('Connection request withdrawn.', 'info');
     } catch (err) {
-      alert(err.response?.data?.message || 'Could not withdraw request');
+      showToast(err.response?.data?.message || 'Could not withdraw request', 'error');
     }
   };
 

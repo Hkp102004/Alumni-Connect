@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import './Events.css';
 import FaqSection from '../components/FaqSection';
 
 export default function Events() {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -52,8 +54,9 @@ export default function Events() {
       setShowForm(false);
       setForm({ title: '', description: '', eventType: 'networking', date: '', location: '', meetingLink: '' });
       loadEvents();
+      showToast('Event created successfully!', 'success');
     } catch (err) {
-      alert(err.response?.data?.message || 'Could not create event');
+      showToast(err.response?.data?.message || 'Could not create event', 'error');
     }
   };
 
@@ -61,8 +64,9 @@ export default function Events() {
     try {
       await api.post(`/events/${id}/rsvp`);
       loadEvents();
+      showToast('Successfully RSVP\'d for this event!', 'success');
     } catch (err) {
-      alert(err.response?.data?.message || 'Could not RSVP');
+      showToast(err.response?.data?.message || 'Could not RSVP', 'error');
     }
   };
 

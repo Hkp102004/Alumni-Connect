@@ -1,3 +1,4 @@
+import { useToast } from '../context/ToastContext';
 import './Careers.css';
 
 const JOB_LISTINGS = [
@@ -25,8 +26,10 @@ const JOB_LISTINGS = [
 ];
 
 export default function Careers() {
+  const { showToast } = useToast();
+
   const handleApply = (title) => {
-    alert(`Thank you for your interest in the "${title}" role. Please send your resume to careers@lumnus.com.`);
+    showToast(`Thank you for your interest in the "${title}" role. Please send your resume to careers@lumnus.com.`, 'info');
   };
 
   return (

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import './Opportunities.css';
 import FaqSection from '../components/FaqSection';
 
@@ -293,6 +294,7 @@ function ApplicantsPanel({ opportunity, onClose }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Opportunities() {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const isAlumni = user?.role === 'alumni';
 
   const [opportunities, setOpportunities] = useState([]);
@@ -336,8 +338,9 @@ export default function Opportunities() {
       setShowForm(false);
       setForm({ title: '', company: '', type: 'job', location: '', description: '', applyLink: '' });
       loadOpportunities();
+      showToast('Opportunity posted successfully!', 'success');
     } catch (err) {
-      alert(err.response?.data?.message || 'Could not post opportunity');
+      showToast(err.response?.data?.message || 'Could not post opportunity', 'error');
     }
   };
 
