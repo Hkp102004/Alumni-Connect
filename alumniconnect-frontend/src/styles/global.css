@@ -52,9 +52,17 @@ body {
 /* Page Transition Effects */
 .page-transition {
   animation: pageFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  min-height: calc(100vh - 72px);
+  min-height: calc(100vh - 64px);
   display: flex;
   flex-direction: column;
+  padding-top: 64px; /* Desktop fixed navbar offset */
+}
+
+@media (max-width: 768px) {
+  .page-transition {
+    padding-top: 82px; /* Mobile double-row fixed navbar offset */
+    min-height: calc(100vh - 82px);
+  }
 }
 
 @keyframes pageFadeIn {
