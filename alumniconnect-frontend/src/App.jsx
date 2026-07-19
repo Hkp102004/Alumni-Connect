@@ -31,7 +31,7 @@ function AppContent() {
   return (
     <>
       <Navbar />
-      <div key={location.pathname} className="page-transition">
+      <div key={location.pathname} className={`page-transition ${location.pathname === '/' ? 'page-transition--landing' : ''}`}>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
