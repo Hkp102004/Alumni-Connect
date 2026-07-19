@@ -12,6 +12,15 @@ const requestMentorship = async (req, res) => {
       return res.status(400).json({ message: 'Selected user is not a registered mentor' });
     }
 
+    // Check if an active/pending mentorship already exists for this mentee
+    const existing = await Mentorship.findOne({
+      mentee: req.user._id,
+      status: { $in: ['pending', 'active'] },
+    });
+    if (existing) {
+      return res.status(400).json({ message: 'You already have an active or pending mentorship' });
+    }
+
     const mentorship = await Mentorship.create({
       mentor,
       mentee: req.user._id,
@@ -26,7 +35,7 @@ const requestMentorship = async (req, res) => {
 };
 
 // @route  PUT /api/mentorships/:id/status
-// @desc   Mentor updates status. Body: { status: 'active' | 'declined' | 'completed' }
+// @desc   Mentor accepts/declines/completes a mentorship
 const updateMentorshipStatus = async (req, res) => {
   try {
     const { status, meetingLink } = req.body;
@@ -50,7 +59,7 @@ const updateMentorshipStatus = async (req, res) => {
 };
 
 // @route  POST /api/mentorships/:id/sessions
-// @desc   Log a mentorship session. Body: { date, notes }
+// @desc   Log a mentorship session
 const addSessionLog = async (req, res) => {
   try {
     const { date, notes } = req.body;
@@ -75,7 +84,7 @@ const addSessionLog = async (req, res) => {
 };
 
 // @route  GET /api/mentorships/me
-// @desc   List mentorships where the user is mentor or mentee, optional ?status=
+// @desc   List mentorships where the user is mentor or mentee
 const getMyMentorships = async (req, res) => {
   try {
     const { status } = req.query;
@@ -85,8 +94,8 @@ const getMyMentorships = async (req, res) => {
     if (status) filter.status = status;
 
     const mentorships = await Mentorship.find(filter)
-      .populate('mentor', 'name company designation email avatarUrl linkedinUrl githubUrl')
-      .populate('mentee', 'name batch branch email avatarUrl linkedinUrl githubUrl');
+      .populate('mentor', 'name company designation email phone avatarUrl linkedinUrl')
+      .populate('mentee', 'name batch branch email avatarUrl');
 
     res.json(mentorships);
   } catch (error) {
@@ -94,4 +103,58 @@ const getMyMentorships = async (req, res) => {
   }
 };
 
-module.exports = { requestMentorship, updateMentorshipStatus, addSessionLog, getMyMentorships };
+// @route  PUT /api/mentorships/:id/release
+// @desc   Student requests to be released from their current mentorship
+const requestRelease = async (req, res) => {
+  try {
+    const mentorship = await Mentorship.findById(req.params.id);
+    if (!mentorship) return res.status(404).json({ message: 'Mentorship not found' });
+
+    if (String(mentorship.mentee) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Only the mentee can request a release' });
+    }
+
+    if (mentorship.status !== 'active') {
+      return res.status(400).json({ message: 'Can only request release from an active mentorship' });
+    }
+
+    mentorship.releaseRequest = 'pending';
+    await mentorship.save();
+    res.json(mentorship);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @route  PUT /api/mentorships/:id/release/accept
+// @desc   Mentor accepts the student's release request — student is freed
+const acceptRelease = async (req, res) => {
+  try {
+    const mentorship = await Mentorship.findById(req.params.id);
+    if (!mentorship) return res.status(404).json({ message: 'Mentorship not found' });
+
+    if (String(mentorship.mentor) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Only the mentor can accept a release' });
+    }
+
+    if (mentorship.releaseRequest !== 'pending') {
+      return res.status(400).json({ message: 'No pending release request on this mentorship' });
+    }
+
+    mentorship.releaseRequest = 'accepted';
+    mentorship.status = 'completed'; // Mark as completed — student is freed to find new mentor
+    await mentorship.save();
+    res.json(mentorship);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+module.exports = {
+  requestMentorship,
+  updateMentorshipStatus,
+  addSessionLog,
+  getMyMentorships,
+  requestRelease,
+  acceptRelease,
+};

@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema(
     avatarUrl: { type: String, default: '' },
     linkedinUrl: { type: String, default: '' },
     githubUrl: { type: String, default: '' },
+    phone: { type: String, trim: true, default: '' },
     isMentor: { type: Boolean, default: false }, // alumni opting in as mentors
     mentorExpertise: [{ type: String, trim: true }],
   },

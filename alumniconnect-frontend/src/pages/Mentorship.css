@@ -805,3 +805,324 @@
     width: 100%;
   }
 }
+
+/* ─── Toolbar right side ─── */
+.ms-toolbar__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ─── Become a Mentor button ─── */
+.ms-become-mentor-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+  white-space: nowrap;
+  font-family: var(--font-body);
+}
+.ms-become-mentor-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+/* ─── Mentor badge ─── */
+.ms-mentor-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0;
+  color: #16a34a;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* ─── Tab badge colour variants ─── */
+.ms-tab__badge--green {
+  background: #16a34a;
+}
+
+/* ─── Session contact line ─── */
+.ms-session__contact {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  color: #64748b;
+  margin: 4px 0 0;
+}
+.ms-session__area {
+  font-size: 0.85rem;
+  color: #475569;
+  margin: 4px 0 0;
+}
+
+/* ─── Notice banner ─── */
+.ms-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  color: #92400e;
+  margin-bottom: 24px;
+}
+
+/* ─── Error message ─── */
+.ms-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+/* ─── Mentor Sign-Up Modal extra ─── */
+.ms-modal--signup {
+  max-width: 500px;
+}
+.ms-signup-icon {
+  font-size: 2.4rem;
+  line-height: 1;
+}
+.ms-form-hint {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+/* ─── Mentor Detail Card (student view — active/pending) ─── */
+.ms-mentor-detail-card {
+  max-width: 560px;
+  margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.ms-mentor-detail-card--pending {
+  border-color: #fde68a;
+  background: #fffdf5;
+}
+
+.ms-mdc__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0;
+  color: #16a34a;
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  align-self: flex-start;
+}
+
+.ms-mdc__header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ms-mdc__avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #ffffff;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.ms-mdc__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ms-mdc__name {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+.ms-mdc__role {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Pending notice */
+.ms-mdc__pending-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  border-radius: 14px;
+  padding: 16px;
+  color: #92400e;
+}
+.ms-mdc__pending-notice strong {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.ms-mdc__pending-notice p {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+/* Contact items */
+.ms-mdc__contacts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ms-mdc__contact-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.ms-mdc__contact-item:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.ms-mdc__contact-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ms-mdc__contact-icon--email  { background: #eff6ff; color: #3b82f6; }
+.ms-mdc__contact-icon--phone  { background: #f0fdf4; color: #16a34a; }
+.ms-mdc__contact-icon--linkedin { background: #eff6ff; color: #0a66c2; }
+
+.ms-mdc__contact-label {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.ms-mdc__contact-value {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* Footer + buttons */
+.ms-mdc__footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.ms-btn--change {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #fff7ed;
+  border: 1.5px solid #fdba74;
+  color: #ea580c;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  font-family: var(--font-body);
+}
+.ms-btn--change:hover {
+  background: #ffedd5;
+  border-color: #f97316;
+}
+
+/* Release pending notice */
+.ms-release-pending {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  border-radius: 10px;
+  padding: 10px 16px;
+}
+
+/* Release accept button (alumni view) */
+.ms-btn--release-accept {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #fef3c7;
+  border: 1.5px solid #fcd34d;
+  color: #92400e;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.15s ease;
+  font-family: var(--font-body);
+}
+.ms-btn--release-accept:hover {
+  background: #fde68a;
+}
+
+@media (max-width: 600px) {
+  .ms-mentor-detail-card {
+    padding: 24px 20px;
+    border-radius: 20px;
+  }
+  .ms-become-mentor-btn span {
+    display: none;
+  }
+}
+
