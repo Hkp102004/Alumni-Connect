@@ -224,6 +224,7 @@ export default function Profile() {
   const missingFields     = requiredFields.filter(f => !String(form[f.key] || '').trim());
   const isComplete        = missingFields.length === 0;
   const completenessPercent = Math.round(((requiredFields.length - missingFields.length) / requiredFields.length) * 100);
+  const hasAboutInfo = !!(form.designation || form.company || form.branch || form.location || form.batch);
 
   const avatarSrc   = form.avatarUrl || `${DEFAULT_AVATAR}${encodeURIComponent(form.name || 'U')}`;
   const skillsArray = form.skills.split(',').map(s => s.trim()).filter(Boolean);
