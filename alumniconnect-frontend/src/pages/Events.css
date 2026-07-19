@@ -12,11 +12,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 56px 0 44px;
-  gap: 48px;
+  gap: 32px 48px;
+  flex-wrap: wrap;
 }
 
 .ev-hero__content {
   flex: 1;
+  min-width: 280px;
 }
 
 .ev-hero__title {
