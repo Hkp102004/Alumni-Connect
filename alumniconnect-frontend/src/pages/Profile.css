@@ -674,3 +674,214 @@
     padding: 20px 16px;
   }
 }
+
+/* ── Avatar Actions ── */
+.profile-sidebar__avatar-actions {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  transition: opacity 0.2s ease;
+  border-radius: 0 0 50% 50%;
+}
+
+.profile-sidebar__avatar-delete-btn {
+  background: rgba(225, 29, 72, 0.85);
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  padding: 3px 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.profile-sidebar__avatar-delete-btn:hover {
+  background: #e11d48;
+}
+
+/* ── Resume / CV Card ── */
+.profile-resume-card {
+  margin-top: 24px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-resume-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profile-resume-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.profile-resume-sub {
+  margin: 2px 0 0 0;
+  font-size: 0.825rem;
+  color: #64748b;
+}
+
+.profile-resume-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #059669;
+  background: #d1fae5;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.profile-resume-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.profile-resume-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-resume-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.profile-resume-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-resume-limit-text {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.profile-resume-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.profile-resume-btn {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+}
+
+.profile-resume-btn.download {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.profile-resume-btn.download:hover {
+  background: #1d4ed8;
+}
+
+.profile-resume-btn.replace {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.profile-resume-btn.replace:hover {
+  background: #e2e8f0;
+}
+
+.profile-resume-btn.delete {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.profile-resume-btn.delete:hover {
+  background: #fee2e2;
+}
+
+.profile-resume-upload-box {
+  width: 100%;
+}
+
+.profile-resume-upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 24px;
+  background: #ffffff;
+  border: 2px dashed #cbd5e1;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #2563eb;
+  text-align: center;
+}
+
+.profile-resume-upload-area:hover {
+  border-color: #2563eb;
+  background: #f8fafc;
+}
+
+.upload-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.upload-desc {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+

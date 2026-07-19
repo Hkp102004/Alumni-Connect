@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
+import ImageAdjustModal from '../components/ImageAdjustModal';
 import './Profile.css';
 
 const DEFAULT_BANNER =
@@ -21,32 +22,54 @@ export default function Profile() {
     bio:             user?.bio              || '',
     skills:          (user?.skills          || []).join(', '),
     avatarUrl:       user?.avatarUrl        || '',
+    resumeUrl:       user?.resumeUrl        || '',
+    resumeName:      user?.resumeName       || '',
     linkedinUrl:     user?.linkedinUrl      || '',
     githubUrl:       user?.githubUrl        || '',
     isMentor:        user?.isMentor         || false,
     mentorExpertise: (user?.mentorExpertise || []).join(', '),
   });
 
-  const [saved,          setSaved]         = useState(false);
-  const [saving,         setSaving]        = useState(false);
-  const [uploadingAvatar,setUploadingAvatar]= useState(false);
-  const [error,          setError]         = useState('');
-  const [activeSection,  setActiveSection] = useState('overview');
+  const [saved,           setSaved]           = useState(false);
+  const [saving,          setSaving]          = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingResume, setUploadingResume] = useState(false);
+  const [selectedCropFile,setSelectedCropFile]= useState(null);
+  const [error,           setError]           = useState('');
+  const [activeSection,   setActiveSection]   = useState('overview');
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm({ ...form, [name]: type === 'checkbox' ? checked : value });
   };
 
-  const handleAvatarUpload = async (e) => {
+  /* ── Avatar File Select & Crop ── */
+  const handleAvatarFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image file size exceeds maximum limit of 5 MB.');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file.');
+      return;
+    }
+
+    setError('');
+    setSelectedCropFile(file);
+    e.target.value = ''; // Reset input
+  };
+
+  const handleApplyCroppedAvatar = async (croppedBlob) => {
+    setSelectedCropFile(null);
     setUploadingAvatar(true);
     setError('');
 
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append('image', croppedBlob, 'avatar.jpg');
 
     try {
       const res = await api.post('/upload/image', formData, {
@@ -62,6 +85,92 @@ export default function Profile() {
       setError(err.response?.data?.message || 'Failed to upload image to Cloudinary.');
     } finally {
       setUploadingAvatar(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    setUploadingAvatar(true);
+    setError('');
+    try {
+      setForm((prev) => ({ ...prev, avatarUrl: '' }));
+      const updatedUserRes = await api.put('/users/me', { avatarUrl: '' });
+      setUser(updatedUserRes.data);
+      setSaved(true);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to remove avatar.');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  /* ── Resume / CV Upload & Delete ── */
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 5 MB max file size limit check
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Resume file size exceeds maximum limit of 5 MB.');
+      return;
+    }
+
+    const allowedMimeTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+
+    if (!allowedMimeTypes.includes(file.mimetype) && !/\.(pdf|doc|docx)$/i.test(file.name)) {
+      setError('Invalid format. Only PDF, DOC, and DOCX files up to 5 MB are allowed.');
+      return;
+    }
+
+    setUploadingResume(true);
+    setError('');
+
+    const formData = new FormData();
+    formData.append('document', file);
+
+    try {
+      const res = await api.post('/upload/document', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      const newResumeUrl = res.data.url;
+      const newResumeName = res.data.original_name || file.name;
+
+      setForm((prev) => ({ ...prev, resumeUrl: newResumeUrl, resumeName: newResumeName }));
+
+      const updatedUserRes = await api.put('/users/me', {
+        resumeUrl: newResumeUrl,
+        resumeName: newResumeName,
+      });
+
+      setUser(updatedUserRes.data);
+      setSaved(true);
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || 'Failed to upload resume document.');
+    } finally {
+      setUploadingResume(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveResume = async () => {
+    setUploadingResume(true);
+    setError('');
+    try {
+      setForm((prev) => ({ ...prev, resumeUrl: '', resumeName: '' }));
+      const updatedUserRes = await api.put('/users/me', { resumeUrl: '', resumeName: '' });
+      setUser(updatedUserRes.data);
+      setSaved(true);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to remove resume.');
+    } finally {
+      setUploadingResume(false);
     }
   };
 
@@ -140,6 +249,14 @@ export default function Profile() {
 
   return (
     <div className="profile-page">
+      {/* ── Image Adjustment Modal ── */}
+      {selectedCropFile && (
+        <ImageAdjustModal
+          imageFile={selectedCropFile}
+          onClose={() => setSelectedCropFile(null)}
+          onApply={handleApplyCroppedAvatar}
+        />
+      )}
 
       {/* ── Banner ── */}
       <div className="profile-banner">
@@ -156,20 +273,38 @@ export default function Profile() {
           {/* Avatar (above card, overlapping banner) */}
           <div className="profile-sidebar__avatar-wrap">
             <img src={avatarSrc} alt={form.name} className="profile-sidebar__avatar" />
-            <label className="profile-sidebar__avatar-upload-btn" title="Upload new photo to Cloudinary">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarUpload}
-                disabled={uploadingAvatar}
-                style={{ display: 'none' }}
-              />
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                <circle cx="12" cy="13" r="4"/>
-              </svg>
-              <span>{uploadingAvatar ? 'Uploading...' : 'Change'}</span>
-            </label>
+            <div className="profile-sidebar__avatar-actions">
+              <label className="profile-sidebar__avatar-upload-btn" title="Upload and adjust photo">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarFileSelect}
+                  disabled={uploadingAvatar}
+                  style={{ display: 'none' }}
+                />
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <span>{uploadingAvatar ? 'Uploading...' : 'Adjust / Upload'}</span>
+              </label>
+
+              {form.avatarUrl && (
+                <button
+                  type="button"
+                  onClick={handleRemoveAvatar}
+                  className="profile-sidebar__avatar-delete-btn"
+                  title="Remove profile photo"
+                  disabled={uploadingAvatar}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                  Remove
+                </button>
+              )}
+            </div>
           </div>
 
           {/* White card */}
@@ -328,26 +463,86 @@ export default function Profile() {
                   <span className="profile-char-count">{500 - (form.bio?.length || 0)} characters remaining</span>
                 </div>
 
-                <div className="profile-field">
-                  <label className="profile-label">Profile Photo URL <span className="profile-label__opt">(optional)</span></label>
-                  <input className="profile-input" name="avatarUrl" value={form.avatarUrl} onChange={handleChange} placeholder="https://example.com/your-photo.jpg" />
-                  <span className="profile-help">Leave blank to use an auto-generated avatar from your name.</span>
-                </div>
-
                 <div className="profile-field profile-field--readonly">
                   <label className="profile-label">Account Role</label>
                   <div className="profile-readonly-pill">{form.role === 'alumni' ? '🎓 Alumni' : '📚 Student'}</div>
                   <span className="profile-help">Role is locked after registration.</span>
                 </div>
 
-                {skillsArray.length > 0 && (
-                  <div className="profile-skills-preview">
-                    <label className="profile-label">Your Skills</label>
-                    <div className="profile-skills-preview__tags">
-                      {skillsArray.map((sk, i) => <span key={i} className="profile-skill-tag">{sk}</span>)}
+                {/* Resume / CV Section in Overview */}
+                <div className="profile-resume-card">
+                  <div className="profile-resume-head">
+                    <div>
+                      <h3 className="profile-resume-title">Resume / CV Document</h3>
+                      <p className="profile-resume-sub">Upload your CV in PDF, DOC, or DOCX format (Max size: 5 MB).</p>
                     </div>
+                    {form.resumeUrl && (
+                      <span className="profile-resume-badge">Uploaded</span>
+                    )}
                   </div>
-                )}
+
+                  {form.resumeUrl ? (
+                    <div className="profile-resume-item">
+                      <div className="profile-resume-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="22" height="22">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                          <polyline points="14 2 14 8 20 8"/>
+                          <line x1="16" y1="13" x2="8" y2="13"/>
+                          <line x1="16" y1="17" x2="8" y2="17"/>
+                          <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                      </div>
+                      <div className="profile-resume-details">
+                        <span className="profile-resume-name">{form.resumeName || 'Curriculum_Vitae.pdf'}</span>
+                        <span className="profile-resume-limit-text">Max 5 MB · PDF / DOC / DOCX</span>
+                      </div>
+                      <div className="profile-resume-actions">
+                        <a href={form.resumeUrl} target="_blank" rel="noreferrer" className="profile-resume-btn download">
+                          View / Download
+                        </a>
+                        <label className="profile-resume-btn replace">
+                          <input
+                            type="file"
+                            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            onChange={handleResumeUpload}
+                            disabled={uploadingResume}
+                            style={{ display: 'none' }}
+                          />
+                          {uploadingResume ? 'Uploading...' : 'Replace'}
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handleRemoveResume}
+                          className="profile-resume-btn delete"
+                          disabled={uploadingResume}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="profile-resume-upload-box">
+                      <label className="profile-resume-upload-area">
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                          onChange={handleResumeUpload}
+                          disabled={uploadingResume}
+                          style={{ display: 'none' }}
+                        />
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="32" height="32">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                          <polyline points="17 8 12 3 7 8"/>
+                          <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <span className="upload-title">
+                          {uploadingResume ? 'Uploading CV...' : 'Click to Upload CV / Resume'}
+                        </span>
+                        <span className="upload-desc">Supports PDF, DOC, DOCX up to 5 MB</span>
+                      </label>
+                    </div>
+                  )}
+                </div>
 
                 <SaveBtn />
               </div>
@@ -460,7 +655,6 @@ export default function Profile() {
                   <p className="profile-section__sub">Opt-in to guide current students as a mentor.</p>
                 </div>
 
-                {/* Toggle using JS-driven class */}
                 <label className={`profile-toggle${form.isMentor ? ' profile-toggle--active' : ''}`}>
                   <input
                     type="checkbox"

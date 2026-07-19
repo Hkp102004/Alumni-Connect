@@ -19,6 +19,8 @@ const userSchema = new mongoose.Schema(
     bio: { type: String, maxlength: 500 },
     skills: [{ type: String, trim: true }],
     avatarUrl: { type: String, default: '' },
+    resumeUrl: { type: String, default: '' },
+    resumeName: { type: String, default: '' },
     linkedinUrl: { type: String, default: '' },
     githubUrl: { type: String, default: '' },
     phone: { type: String, trim: true, default: '' },

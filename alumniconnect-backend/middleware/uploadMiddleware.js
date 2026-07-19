@@ -2,11 +2,22 @@ const multer = require('multer');
 
 const storage = multer.memoryStorage();
 
+const allowedMimeTypes = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/jpg',
+  'image/gif',
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
+
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image/')) {
+  if (allowedMimeTypes.includes(file.mimetype) || file.mimetype.startsWith('image/')) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed'), false);
+    cb(new Error('Invalid file type. Only JPG, PNG, WEBP, GIF, PDF, DOC, and DOCX files are allowed.'), false);
   }
 };
 
