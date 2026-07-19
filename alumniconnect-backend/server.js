@@ -21,10 +21,15 @@ app.use((req, res, next) => {
   next();
 });
 
+// Dynamic CORS allowing localhost (any port) and production origins seamlessly
 app.use(cors({
-  origin: '*',
+  origin: (origin, callback) => {
+    // Allow all origins dynamically (reflects incoming origin header for localhost & production)
+    callback(null, true);
+  },
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
 
 app.use(express.json());
