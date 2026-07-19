@@ -91,6 +91,37 @@ export default function Events() {
     return events.filter(e => e.eventType?.toLowerCase() === tabName).length;
   };
 
+  const renderAttendeeAvatars = (rsvps) => {
+    if (!rsvps || rsvps.length === 0) return null;
+    const limit = 3;
+    const displayRsvps = rsvps.slice(0, limit);
+    const remaining = rsvps.length - limit;
+    return (
+      <div className="ev-card__attendee-avatars">
+        {displayRsvps.map((rsvp, idx) => {
+          const u = rsvp.user;
+          const name = u?.name || 'User';
+          const avatar = u?.avatarUrl || `https://ui-avatars.com/api/?background=0052cc&color=fff&name=${encodeURIComponent(name)}`;
+          return (
+            <img 
+              key={rsvp._id || idx} 
+              src={avatar} 
+              alt={name} 
+              title={name}
+              className="ev-card__attendee-avatar" 
+              style={{ zIndex: limit - idx }}
+            />
+          );
+        })}
+        {remaining > 0 && (
+          <div className="ev-card__attendee-avatar-more" style={{ zIndex: 0 }}>
+            +{remaining}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="ev-page">
       {/* Hero Banner */}
@@ -238,15 +269,18 @@ export default function Events() {
 
                   <div className="ev-card__footer">
                     <div className="ev-card__attendees">
-                      <svg className="ev-card__detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                      </svg>
-                      <span>{ev.rsvps?.length || 0} attending</span>
+                      {ev.rsvps && ev.rsvps.length > 0 ? (
+                        <>
+                          {renderAttendeeAvatars(ev.rsvps)}
+                          <span className="ev-card__attendee-count">{ev.rsvps.length} going</span>
+                        </>
+                      ) : (
+                        <span className="ev-card__attendee-count">Be the first to RSVP!</span>
+                      )}
                     </div>
 
                     <button
-                      className={`ev-btn ev-btn--sm ${hasRsvpd ? 'ev-btn--success' : 'ev-btn--outline'}`}
+                      className={`ev-btn ev-btn--sm ${hasRsvpd ? 'ev-btn--success' : 'ev-btn--primary-action'}`}
                       onClick={() => !hasRsvpd && handleRsvp(ev._id)}
                       disabled={hasRsvpd}
                     >
