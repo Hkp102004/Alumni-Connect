@@ -53,6 +53,17 @@ export default function Directory() {
     fetchUsers(activeFilters);
   }, [searchParams]);
 
+  useEffect(() => {
+    if (selectedUser) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [selectedUser]);
+
   const handleFilterChange = (e) => setFilters({ ...filters, [e.target.name]: e.target.value });
 
   const handleSearch = (e) => {

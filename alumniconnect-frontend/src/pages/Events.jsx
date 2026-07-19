@@ -38,6 +38,17 @@ export default function Events() {
     loadEvents();
   }, []);
 
+  useEffect(() => {
+    if (showForm) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showForm]);
+
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const generateMeetLink = () => {

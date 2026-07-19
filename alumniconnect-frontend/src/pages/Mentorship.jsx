@@ -254,6 +254,17 @@ export default function Mentorship() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (requestModal || showSignUp || meetingModalTarget) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [requestModal, showSignUp, meetingModalTarget]);
+
   const filteredMentors = mentors.filter((m) => {
     if (!search) return true;
     const q = search.toLowerCase();

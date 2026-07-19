@@ -329,6 +329,17 @@ export default function Opportunities() {
     loadOpportunities();
   }, []);
 
+  useEffect(() => {
+    if (showForm || applyTarget || applicantsTarget) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showForm, applyTarget, applicantsTarget]);
+
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleCreate = async (e) => {
