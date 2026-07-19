@@ -1,73 +1,54 @@
 const User = require('../models/User');
 
 // @route  GET /api/users
-// @desc   Alumni directory search with filters (only lists users with complete profiles)
+// @desc   Directory — list all registered users with optional filters
 const getUsers = async (req, res) => {
   try {
     const { batch, branch, company, skills, role, search } = req.query;
-    
-    // Core profile completeness conditions: name, batch, branch, bio, location, skills
-    const queryConditions = [
-      { name: { $exists: true, $ne: '' } },
-      { batch: { $exists: true, $ne: '' } },
-      { branch: { $exists: true, $ne: '' } },
-      { bio: { $exists: true, $ne: '' } },
-      { location: { $exists: true, $ne: '' } },
-      { skills: { $exists: true, $not: { $size: 0 } } },
-      {
-        $or: [
-          { role: 'student' },
-          {
-            role: 'alumni',
-            company: { $exists: true, $ne: '' },
-            designation: { $exists: true, $ne: '' }
-          }
-        ]
-      }
-    ];
 
-    if (batch) queryConditions.push({ batch });
-    if (branch) queryConditions.push({ branch });
-    if (company) queryConditions.push({ company: new RegExp(company, 'i') });
-    if (role) queryConditions.push({ role });
+    // Show everyone who signed up (excluding admins)
+    const filter = { role: { $ne: 'admin' } };
+
+    if (role) filter.role = role;
+    if (batch) filter.batch = new RegExp(batch, 'i');
+    if (branch) filter.branch = new RegExp(branch, 'i');
+    if (company) filter.company = new RegExp(company, 'i');
     if (skills) {
-      queryConditions.push({
-        skills: { $in: skills.split(',').map((s) => s.trim()).filter(Boolean) }
-      });
+      filter.skills = {
+        $in: skills.split(',').map((s) => s.trim()).filter(Boolean),
+      };
     }
     if (search) {
-      queryConditions.push({
-        $or: [
-          { name: new RegExp(search, 'i') },
-          { bio: new RegExp(search, 'i') },
-        ]
-      });
+      filter.$or = [
+        { name: new RegExp(search, 'i') },
+        { bio: new RegExp(search, 'i') },
+        { company: new RegExp(search, 'i') },
+        { designation: new RegExp(search, 'i') },
+      ];
     }
 
-    const filter = { $and: queryConditions };
-    const users = await User.find(filter).select('-password').sort({ createdAt: -1 });
+    const users = await User.find(filter)
+      .select('-password')
+      .sort({ createdAt: -1 });
+
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
+
 // @route  GET /api/users/mentors
-// @desc   List all users who opted in as mentors (only lists mentors with complete profiles)
+// @desc   List all users who opted in as mentors
 const getMentors = async (req, res) => {
   try {
     const { expertise } = req.query;
-    
+
+    // Only require mentor flag + company + designation (enough to show in exploration cards)
     const queryConditions = [
       { isMentor: true },
-      { name: { $exists: true, $ne: '' } },
-      { batch: { $exists: true, $ne: '' } },
-      { branch: { $exists: true, $ne: '' } },
-      { bio: { $exists: true, $ne: '' } },
-      { location: { $exists: true, $ne: '' } },
-      { skills: { $exists: true, $not: { $size: 0 } } },
       { company: { $exists: true, $ne: '' } },
-      { designation: { $exists: true, $ne: '' } }
+      { designation: { $exists: true, $ne: '' } },
     ];
 
     if (expertise) {
@@ -77,7 +58,8 @@ const getMentors = async (req, res) => {
     }
 
     const filter = { $and: queryConditions };
-    const mentors = await User.find(filter).select('-password');
+    // Return only public-facing fields for mentor cards
+    const mentors = await User.find(filter).select('name company designation mentorExpertise avatarUrl location');
     res.json(mentors);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -102,7 +84,7 @@ const updateProfile = async (req, res) => {
     const allowedFields = [
       'name', 'batch', 'branch', 'company', 'designation',
       'location', 'bio', 'skills', 'avatarUrl', 'linkedinUrl', 'githubUrl',
-      'isMentor', 'mentorExpertise',
+      'isMentor', 'mentorExpertise', 'phone',
     ];
 
     const updates = {};

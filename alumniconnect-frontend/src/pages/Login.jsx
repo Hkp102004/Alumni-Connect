@@ -19,7 +19,7 @@ const BACKGROUND_CARDS = [
 ];
 
 export default function Login() {
-  const { login, loginWithGoogle, resetPassword } = useAuth();
+  const { login, loginWithGoogle, loginWithGoogleAndRole, resetPassword } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
@@ -27,6 +27,13 @@ export default function Login() {
   const [mode, setMode] = useState('login'); // login | forgot
   const [resetEmail, setResetEmail] = useState('');
   const [resetSuccess, setResetSuccess] = useState(false);
+
+  // Role selection modal state (for new Google users)
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [pendingFirebaseToken, setPendingFirebaseToken] = useState(null);
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [batchInput, setBatchInput] = useState('');
+  const [roleLoading, setRoleLoading] = useState(false);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -51,9 +58,33 @@ export default function Login() {
       await loginWithGoogle();
       navigate('/directory');
     } catch (err) {
+      if (err.needsRole) {
+        // New Google user — show role selection modal
+        setPendingFirebaseToken(err.firebaseIdToken);
+        setSelectedRole(null);
+        setBatchInput('');
+        setShowRoleModal(true);
+        setLoading(false);
+        return;
+      }
       setError(err.message || 'Google Authentication failed.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRoleConfirm = async () => {
+    if (!selectedRole) return;
+    if (selectedRole === 'alumni' && !batchInput.trim()) return;
+    setRoleLoading(true);
+    try {
+      await loginWithGoogleAndRole(pendingFirebaseToken, selectedRole, selectedRole === 'alumni' ? batchInput.trim() : '');
+      navigate('/directory');
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Could not complete sign-up.');
+      setShowRoleModal(false);
+    } finally {
+      setRoleLoading(false);
     }
   };
 
@@ -88,6 +119,86 @@ export default function Login() {
       </div>
 
       <div className="login-overlay"></div>
+
+      {/* Role Selection Modal */}
+      {showRoleModal && (
+        <div className="role-modal-backdrop">
+          <div className="role-modal-card">
+            <div className="role-modal-logo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="24" height="24">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+              <span>lumnus</span>
+            </div>
+
+            <h2 className="role-modal-title">Welcome! Who are you?</h2>
+            <p className="role-modal-subtitle">Let us know how you'd like to join the community so we can personalise your experience.</p>
+
+            <div className="role-tab-group">
+              <button
+                type="button"
+                id="role-tab-student"
+                className={`role-tab-card ${selectedRole === 'student' ? 'role-tab-card--active' : ''}`}
+                onClick={() => { setSelectedRole('student'); setBatchInput(''); }}
+              >
+                <div className="role-tab-icon">🎓</div>
+                <div className="role-tab-info">
+                  <span className="role-tab-label">Student</span>
+                  <span className="role-tab-desc">Currently enrolled at LPU</span>
+                </div>
+                <div className={`role-tab-check ${selectedRole === 'student' ? 'role-tab-check--visible' : ''}`}>
+                  <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                  </svg>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                id="role-tab-alumni"
+                className={`role-tab-card ${selectedRole === 'alumni' ? 'role-tab-card--active' : ''}`}
+                onClick={() => setSelectedRole('alumni')}
+              >
+                <div className="role-tab-icon">🏆</div>
+                <div className="role-tab-info">
+                  <span className="role-tab-label">Alumni</span>
+                  <span className="role-tab-desc">Graduated from LPU</span>
+                </div>
+                <div className={`role-tab-check ${selectedRole === 'alumni' ? 'role-tab-check--visible' : ''}`}>
+                  <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                  </svg>
+                </div>
+              </button>
+
+              {selectedRole === 'alumni' && (
+                <div className="role-batch-field">
+                  <label htmlFor="role-batch-input" className="role-batch-label">Graduation batch year</label>
+                  <input
+                    id="role-batch-input"
+                    type="text"
+                    className="role-batch-input"
+                    placeholder="e.g. 2022"
+                    value={batchInput}
+                    onChange={(e) => setBatchInput(e.target.value)}
+                    maxLength={4}
+                  />
+                </div>
+              )}
+            </div>
+
+            <button
+              type="button"
+              id="role-confirm-btn"
+              className="airbnb-continue-btn"
+              disabled={!selectedRole || (selectedRole === 'alumni' && !batchInput.trim()) || roleLoading}
+              onClick={handleRoleConfirm}
+            >
+              {roleLoading ? 'Setting up your account...' : 'Continue'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Center Airbnb styled card */}
       <div className="airbnb-login-card">
@@ -142,7 +253,7 @@ export default function Login() {
             </div>
 
             <div className="social-login-actions">
-              <button type="button" className="social-login-btn" onClick={handleGoogleLogin}>
+              <button type="button" className="social-login-btn" onClick={handleGoogleLogin} disabled={loading}>
                 <svg className="social-svg-icon" viewBox="0 0 24 24" width="20" height="20">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -166,7 +277,7 @@ export default function Login() {
             {resetSuccess ? (
               <div className="reset-success-container">
                 <p className="reset-success-text">
-                  We've sent a password reset link to <strong>{resetEmail}</strong>. Please check your inbox.
+                  We&apos;ve sent a password reset link to <strong>{resetEmail}</strong>. Please check your inbox.
                 </p>
                 <button type="button" className="airbnb-continue-btn" onClick={() => { setResetSuccess(false); setResetEmail(''); setMode('login'); }}>
                   Back to log in
@@ -175,7 +286,7 @@ export default function Login() {
             ) : (
               <form onSubmit={handleResetSubmit} className="airbnb-login-form">
                 <p className="reset-help-text">
-                  Enter the email address associated with your account, and we'll email you a link to reset your password.
+                  Enter the email address associated with your account, and we&apos;ll email you a link to reset your password.
                 </p>
                 <div className="stacked-input-group">
                   <input

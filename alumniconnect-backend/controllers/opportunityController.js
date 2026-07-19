@@ -22,7 +22,6 @@ const createOpportunity = async (req, res) => {
 };
 
 // @route  GET /api/opportunities
-// @desc   optional ?type=job|internship&search=
 const getOpportunities = async (req, res) => {
   try {
     const { type, search } = req.query;
@@ -36,8 +35,10 @@ const getOpportunities = async (req, res) => {
       ];
     }
 
+    // Return applicants WITHOUT resumeData to keep list responses lean
     const opportunities = await Opportunity.find(filter)
-      .populate('postedBy', 'name company')
+      .populate('postedBy', 'name company _id')
+      .select('-applicants.resumeData')
       .sort({ createdAt: -1 });
 
     res.json(opportunities);
@@ -47,6 +48,7 @@ const getOpportunities = async (req, res) => {
 };
 
 // @route  POST /api/opportunities/:id/apply
+// Body: { email, phone, resumeName?, resumeData?, resumeMime? }
 const applyToOpportunity = async (req, res) => {
   try {
     const opportunity = await Opportunity.findById(req.params.id);
@@ -59,16 +61,48 @@ const applyToOpportunity = async (req, res) => {
       return res.status(400).json({ message: 'Already applied to this opportunity' });
     }
 
-    opportunity.applicants.push({ user: req.user._id });
+    const { email, phone, resumeName, resumeData, resumeMime } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required to apply' });
+    }
+
+    opportunity.applicants.push({
+      user: req.user._id,
+      email: email.trim(),
+      phone: phone?.trim() || '',
+      resumeName: resumeName || '',
+      resumeData: resumeData || '',
+      resumeMime: resumeMime || '',
+    });
+
     await opportunity.save();
-    res.json(opportunity);
+    res.json({ message: 'Application submitted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @route  GET /api/opportunities/:id/applicants
+// @desc   Only the poster can fetch full applicant list (with resume data)
+const getApplicants = async (req, res) => {
+  try {
+    const opportunity = await Opportunity.findById(req.params.id)
+      .populate('applicants.user', 'name email batch branch avatarUrl');
+
+    if (!opportunity) return res.status(404).json({ message: 'Opportunity not found' });
+
+    if (String(opportunity.postedBy) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Only the poster can view applicants' });
+    }
+
+    res.json(opportunity.applicants);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 // @route  PUT /api/opportunities/:id/applicants/:userId
-// @desc   Poster updates an applicant's status
 const updateApplicantStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -113,6 +147,7 @@ module.exports = {
   createOpportunity,
   getOpportunities,
   applyToOpportunity,
+  getApplicants,
   updateApplicantStatus,
   deleteOpportunity,
 };

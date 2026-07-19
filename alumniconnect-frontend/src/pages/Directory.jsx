@@ -92,7 +92,6 @@ export default function Directory() {
     }
   };
 
-  const connectedCount = connections.filter(c => c.status === 'accepted').length;
   const alumniCount = users.filter(u => u.role === 'alumni').length;
   const studentCount = users.filter(u => u.role === 'student').length;
 
@@ -150,18 +149,18 @@ export default function Directory() {
           <h1 className="dir-hero__title">Alumni Directory</h1>
           <p className="dir-hero__sub">Discover graduates and students across every batch and branch.</p>
         </div>
-        <div className="dir-hero__stats">
-          <div className="dir-stat">
-            <span className="dir-stat__num">{users.length}</span>
-            <span className="dir-stat__label">Total members</span>
+        <div class="dir-hero__stats">
+          <div class="dir-stat">
+            <span class="dir-stat__num">{users.length}</span>
+            <span class="dir-stat__label">Total members</span>
           </div>
-          <div className="dir-stat">
-            <span className="dir-stat__num">{alumniCount}</span>
-            <span className="dir-stat__label">Alumni</span>
+          <div class="dir-stat">
+            <span class="dir-stat__num">{alumniCount}</span>
+            <span class="dir-stat__label">Alumni</span>
           </div>
-          <div className="dir-stat">
-            <span className="dir-stat__num">{connectedCount}</span>
-            <span className="dir-stat__label">Your connections</span>
+          <div class="dir-stat">
+            <span class="dir-stat__num">{studentCount}</span>
+            <span class="dir-stat__label">Students</span>
           </div>
         </div>
       </section>
@@ -253,8 +252,8 @@ export default function Directory() {
                     <h3 className="dir-card__name">{u.name}</h3>
                     <p className="dir-card__subtitle">
                       {u.role === 'alumni'
-                        ? `${u.designation || 'Alumnus'}${u.company ? ` at ${u.company}` : ''}`
-                        : `${u.branch || 'Student'}${u.batch ? ` · Batch ${u.batch}` : ''}`}
+                        ? [u.designation, u.company ? `at ${u.company}` : ''].filter(Boolean).join(' ') || 'Alumni'
+                        : [u.branch, u.batch ? `Batch ${u.batch}` : ''].filter(Boolean).join(' · ') || 'Student'}
                     </p>
                     {u.location && (
                       <span className="dir-card__location">
