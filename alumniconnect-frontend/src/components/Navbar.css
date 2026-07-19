@@ -63,6 +63,51 @@
   gap: 10px;
 }
 
+.navbar__profile-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px 5px 6px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.navbar__profile-pill:hover {
+  background: var(--surface-alt);
+  border-color: var(--border-strong);
+}
+
+.navbar__profile-pill--active {
+  background: var(--blue-glow);
+  border-color: var(--blue-soft);
+  color: var(--blue);
+}
+
+.navbar__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.navbar__username {
+  max-width: 130px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .navbar__cta {
   padding: 8px 18px;
   font-size: 0.85rem;
@@ -115,6 +160,16 @@
   color: #ffffff !important;
 }
 
+.navbar--transparent .navbar__profile-pill {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+}
+
+.navbar--transparent .navbar__profile-pill:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
 .navbar--transparent .navbar__logout {
   border-color: rgba(255, 255, 255, 0.3) !important;
   color: #ffffff !important;
@@ -156,6 +211,6 @@
   }
   .navbar--transparent {
     position: relative;
-    background: #4f46e5 !important; /* solid color on mobile since overlay gets crowded */
+    background: #4f46e5 !important;
   }
 }

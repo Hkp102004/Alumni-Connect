@@ -33,6 +33,9 @@ export default function Navbar() {
     navigate('/login');
   };
 
+  const defaultAvatar = `https://ui-avatars.com/api/?background=0052cc&color=fff&size=64&bold=true&name=${encodeURIComponent(user?.name || 'User')}`;
+  const avatarSrc = user?.avatarUrl || defaultAvatar;
+
   return (
     <nav className={`navbar ${location.pathname === '/' && !scrolled ? 'navbar--transparent' : ''}`}>
       <Link to="/" className="navbar__brand">
@@ -59,10 +62,15 @@ export default function Navbar() {
       <div className="navbar__actions">
         {user ? (
           <>
-            <Link to="/profile" className="pill navbar__pill">
-              {user.name?.split(' ')[0] || 'Profile'}
+            <Link
+              to="/profile"
+              className={`navbar__profile-pill ${location.pathname === '/profile' ? 'navbar__profile-pill--active' : ''}`}
+              title="View Profile"
+            >
+              <img src={avatarSrc} alt={user.name || 'User'} className="navbar__avatar" />
+              <span className="navbar__username">{user.name || 'Profile'}</span>
             </Link>
-            <button className="btn-ghost navbar__logout" onClick={handleLogout}>
+            <button className="btn-ghost navbar__logout" onClick={handleLogout} title="Log out">
               Log out
             </button>
           </>
