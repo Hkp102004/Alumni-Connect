@@ -3,6 +3,7 @@ import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import './Mentorship.css';
 import FaqSection from '../components/FaqSection';
+import MeetingModal from '../components/MeetingModal';
 
 // ─── Mentor Sign-Up Form (Alumni only) ───────────────────────────────────────
 function MentorSignUpModal({ onClose, onSuccess }) {
@@ -211,9 +212,16 @@ export default function Mentorship() {
   const [view, setView] = useState(isAlumni ? 'requests' : 'find');
   const [requestModal, setRequestModal] = useState(null);
   const [showSignUp, setShowSignUp] = useState(false);
+  const [meetingModalTarget, setMeetingModalTarget] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [isMentor, setIsMentor] = useState(user?.isMentor || false);
+
+  const handleSaveMeetingLink = async (meetingUrl) => {
+    if (!meetingModalTarget) return;
+    await api.put(`/mentorships/${meetingModalTarget._id}/meeting`, { meetingLink: meetingUrl });
+    loadData();
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -535,6 +543,35 @@ export default function Mentorship() {
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                           {m.mentee?.email}
                         </p>
+
+                        {/* Live Video Meeting Arrangement Card */}
+                        <div className="ms-meeting-card">
+                          <div className="ms-meeting-info">
+                            <div className="ms-meeting-icon">🎥</div>
+                            <div>
+                              <h4 className="ms-meeting-title">Live Video Meeting Arrangement</h4>
+                              <p className="ms-meeting-sub">
+                                {m.meetingLink ? 'Meeting link is set up for your student session.' : 'Set up a Google Meet, Zoom, or instant Jitsi room for your session.'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="ms-meeting-actions">
+                            {m.meetingLink ? (
+                              <>
+                                <a href={m.meetingLink} target="_blank" rel="noopener noreferrer" className="ms-btn ms-btn--join-meeting">
+                                  🚀 JOIN LIVE MEETING
+                                </a>
+                                <button type="button" className="ms-btn ms-btn--outline-sm" onClick={() => setMeetingModalTarget(m)}>
+                                  Edit Link
+                                </button>
+                              </>
+                            ) : (
+                              <button type="button" className="ms-btn ms-btn--arrange-meeting" onClick={() => setMeetingModalTarget(m)}>
+                                🎥 Arrange Live Meeting
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <div className="ms-session__right">
@@ -740,6 +777,35 @@ export default function Mentorship() {
                   )}
                 </div>
 
+                {/* Live Video Meeting Arrangement Box */}
+                <div className="ms-meeting-card">
+                  <div className="ms-meeting-info">
+                    <div className="ms-meeting-icon">🎥</div>
+                    <div>
+                      <h4 className="ms-meeting-title">Live Video Meeting Arrangement</h4>
+                      <p className="ms-meeting-sub">
+                        {activeMentorship.meetingLink ? 'Your live mentorship video meeting link is ready.' : 'No meeting link set yet. Click below to generate or add a Google Meet, Zoom, or Jitsi link.'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="ms-meeting-actions">
+                    {activeMentorship.meetingLink ? (
+                      <>
+                        <a href={activeMentorship.meetingLink} target="_blank" rel="noopener noreferrer" className="ms-btn ms-btn--join-meeting">
+                          🚀 JOIN LIVE MEETING
+                        </a>
+                        <button type="button" className="ms-btn ms-btn--outline-sm" onClick={() => setMeetingModalTarget(activeMentorship)}>
+                          Edit Link
+                        </button>
+                      </>
+                    ) : (
+                      <button type="button" className="ms-btn ms-btn--arrange-meeting" onClick={() => setMeetingModalTarget(activeMentorship)}>
+                        🎥 Arrange Live Meeting
+                      </button>
+                    )}
+                  </div>
+                </div>
+
                 {/* Change Mentor button */}
                 <div className="ms-mdc__footer">
                   {activeMentorship.releaseRequest === 'none' && (
@@ -766,6 +832,16 @@ export default function Mentorship() {
           )
         )}
       </section>
+
+      {/* Meeting Modal */}
+      {meetingModalTarget && (
+        <MeetingModal
+          mentorshipId={meetingModalTarget._id}
+          existingLink={meetingModalTarget.meetingLink}
+          onClose={() => setMeetingModalTarget(null)}
+          onSave={handleSaveMeetingLink}
+        />
+      )}
 
       <FaqSection
         title="Mentorship FAQs"

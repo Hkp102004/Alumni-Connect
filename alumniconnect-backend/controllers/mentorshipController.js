@@ -58,6 +58,30 @@ const updateMentorshipStatus = async (req, res) => {
   }
 };
 
+// @route  PUT /api/mentorships/:id/meeting
+// @desc   Set or update meeting link for mentorship session (Google Meet, Zoom, Jitsi)
+const updateMeetingLink = async (req, res) => {
+  try {
+    const { meetingLink } = req.body;
+    const mentorship = await Mentorship.findById(req.params.id);
+    if (!mentorship) return res.status(404).json({ message: 'Mentorship not found' });
+
+    const isParticipant =
+      String(mentorship.mentor) === String(req.user._id) ||
+      String(mentorship.mentee) === String(req.user._id);
+
+    if (!isParticipant) {
+      return res.status(403).json({ message: 'Not authorized to update meeting link' });
+    }
+
+    mentorship.meetingLink = meetingLink;
+    await mentorship.save();
+    res.json(mentorship);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 // @route  DELETE /api/mentorships/:id (or POST /api/mentorships/withdraw/:id)
 // @desc   Mentee withdraws a pending mentorship request
 const withdrawMentorshipRequest = async (req, res) => {
@@ -175,6 +199,7 @@ const acceptRelease = async (req, res) => {
 module.exports = {
   requestMentorship,
   updateMentorshipStatus,
+  updateMeetingLink,
   withdrawMentorshipRequest,
   addSessionLog,
   getMyMentorships,
