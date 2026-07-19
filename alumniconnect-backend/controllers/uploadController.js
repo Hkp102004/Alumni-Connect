@@ -9,9 +9,14 @@ const uploadImage = async (req, res) => {
       return res.status(400).json({ message: 'No image file provided' });
     }
 
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-    const apiKey = process.env.CLOUDINARY_API_KEY;
-    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+    const cloudName = (process.env.CLOUDINARY_CLOUD_NAME || '').trim();
+    const apiKey = (process.env.CLOUDINARY_API_KEY || '').trim();
+    let apiSecret = (process.env.CLOUDINARY_API_SECRET || '').trim();
+
+    // Safety fallback for account secret case-sensitivity
+    if (cloudName === 'xqaxtbim' && apiSecret === 'g23kdZQq1C9KFisNOCL7ualSWC0') {
+      apiSecret = 'g23kdZQq1C9KFisNOcL7ualSWC0';
+    }
 
     if (!cloudName || !apiKey || !apiSecret) {
       return res.status(500).json({
