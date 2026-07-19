@@ -622,6 +622,11 @@
   .ev-hero__title {
     font-size: 1.8rem;
   }
+  .ev-hero__stats {
+    width: 100%;
+    justify-content: space-around;
+    gap: 16px;
+  }
   .ev-toolbar {
     flex-direction: column;
     align-items: stretch;
