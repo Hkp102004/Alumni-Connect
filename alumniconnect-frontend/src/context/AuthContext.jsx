@@ -133,7 +133,6 @@ export function AuthProvider({ children }) {
       throw new Error(getAuthErrorMessage(err));
     }
   };
-  };
 
   const register = async (payload) => {
     try {

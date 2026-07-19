@@ -1,0 +1,217 @@
+.notfound-page {
+  min-height: calc(100vh - 72px);
+  background: var(--bg, #f8fafc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  box-sizing: border-box;
+}
+
+.notfound-container {
+  max-width: 760px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 24px;
+}
+
+.notfound-animation-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notfound-lottie {
+  width: 100%;
+  height: 100%;
+  max-height: 280px;
+}
+
+.notfound-lottie svg {
+  width: 100% !important;
+  height: 100% !important;
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.06));
+}
+
+.notfound-skeleton {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(241, 245, 249, 0.5);
+  border-radius: 20px;
+}
+
+.notfound-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(37, 99, 235, 0.15);
+  border-top-color: var(--blue, #2563eb);
+  border-radius: 50%;
+  animation: notfound-spin 0.8s linear infinite;
+}
+
+@keyframes notfound-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.notfound-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 600px;
+}
+
+.notfound-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--blue, #2563eb);
+  background: var(--blue-glow, rgba(37, 99, 235, 0.1));
+  padding: 6px 16px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+}
+
+.notfound-title {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 800;
+  color: var(--text, #0f172a);
+  margin: 0;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.notfound-subtitle {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text-dim, #64748b);
+  margin: 0;
+}
+
+.notfound-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.notfound-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 12px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  font-family: inherit;
+}
+
+.notfound-btn.primary {
+  background: var(--blue, #2563eb);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+
+.notfound-btn.primary:hover {
+  background: var(--blue-hover, #1d4ed8);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+}
+
+.notfound-btn.secondary {
+  background: var(--surface, #ffffff);
+  color: var(--text, #0f172a);
+  border: 1px solid var(--border, #e2e8f0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.notfound-btn.secondary:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.btn-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.notfound-quicklinks {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px dashed var(--border, #e2e8f0);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.quicklinks-label {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--text-dim, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.quicklinks-list {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+}
+
+.quicklinks-list a {
+  color: var(--blue, #2563eb);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.quicklinks-list a:hover {
+  text-decoration: underline;
+  color: var(--blue-hover, #1d4ed8);
+}
+
+.quicklinks-list .dot {
+  color: #cbd5e1;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 640px) {
+  .notfound-animation-wrapper {
+    max-width: 280px;
+    height: 210px;
+  }
+
+  .notfound-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .notfound-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
