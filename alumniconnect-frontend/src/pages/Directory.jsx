@@ -328,7 +328,7 @@ export default function Directory() {
       />
 
       {/* Profile Modal */}
-      {selectedUser && (
+      {selectedUser && createPortal(
         <div className="dir-modal-overlay" onClick={() => setSelectedUser(null)}>
           <div className="dir-modal" onClick={(e) => e.stopPropagation()}>
             <button className="dir-modal__close" onClick={() => setSelectedUser(null)}>
@@ -415,57 +415,13 @@ export default function Directory() {
 
                 {/* Connection panel */}
                 <div className="dir-modal__conn-panel">
-                  {(() => {
-                    const connInfo = getConnectionInfo(selectedUser._id);
-                    if (selectedUser._id === user?._id) return <span className="dir-self-label">This is your profile</span>;
-                    if (!connInfo) {
-                      return (
-                        <button className="dir-modal-action-btn dir-btn--connect" onClick={() => handleConnectClick(selectedUser._id)}>
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/>
-                            <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
-                          </svg>
-                          Connect
-                        </button>
-                      );
-                    }
-                    if (connInfo.status === 'pending') {
-                      if (connInfo.fromUser === user?._id) {
-                        return <span className="dir-status-pill dir-status-pill--pending" style={{width:'100%',justifyContent:'center'}}>Request Sent (Pending)</span>;
-                      }
-                      return (
-                        <div className="dir-respond-row">
-                          <button className="dir-modal-action-btn dir-btn--accept" onClick={() => handleRespondClick(connInfo.id, 'accepted')}>Accept</button>
-                          <button className="dir-modal-action-btn dir-btn--ignore" onClick={() => handleRespondClick(connInfo.id, 'rejected')}>Ignore</button>
-                        </div>
-                      );
-                    }
-                    if (connInfo.status === 'accepted') {
-                      return (
-                        <div className="dir-connected-block">
-                          <div className="dir-connected-badge">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16"><path d="M20 6 9 17l-5-5"/></svg>
-                            Connected
-                          </div>
-                          <div className="dir-connected-email">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14">
-                              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                              <path d="m22 6-10 7L2 6"/>
-                            </svg>
-                            <strong>{selectedUser.email}</strong>
-                          </div>
-                        </div>
-                      );
-                    }
-                    return (
-                      <button className="dir-modal-action-btn dir-btn--connect" onClick={() => handleConnectClick(selectedUser._id)}>Connect</button>
-                    );
-                  })()}
+                  {renderConnectionButton(selectedUser, 'modal')}
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
