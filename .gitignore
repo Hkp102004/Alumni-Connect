@@ -40,3 +40,4 @@ data/
 *.zip
 coverage/
 .cache/
+.firebase/
