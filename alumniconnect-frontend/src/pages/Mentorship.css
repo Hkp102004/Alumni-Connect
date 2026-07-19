@@ -1228,3 +1228,76 @@
   background: #f1f5f9;
 }
 
+/* ── Mobile Layout Rules (< 768px) ── */
+@media (max-width: 768px) {
+  .ms-page {
+    padding: 0 16px 60px;
+  }
+
+  .ms-hero {
+    padding: 32px 0 24px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .ms-hero__title {
+    font-size: 1.75rem;
+  }
+
+  .ms-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .ms-tabs {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+
+  .ms-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ms-tab {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    font-size: 0.82rem;
+  }
+
+  .ms-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .ms-card {
+    padding: 20px;
+  }
+
+  .ms-meeting-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ms-btn--join-meeting,
+  .ms-btn--arrange-meeting {
+    width: 100%;
+  }
+
+  .ms-session {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .ms-session__right {
+    width: 100%;
+    align-items: flex-start;
+  }
+}
+

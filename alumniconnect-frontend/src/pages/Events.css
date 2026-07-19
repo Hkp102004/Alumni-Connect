@@ -615,10 +615,32 @@
 }
 
 @media (max-width: 768px) {
+  .ev-page {
+    padding: 0 16px 60px;
+  }
+  .ev-hero__title {
+    font-size: 1.8rem;
+  }
   .ev-toolbar {
     flex-direction: column;
     align-items: stretch;
     gap: 16px;
+  }
+  .ev-tabs {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .ev-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .ev-tab {
+    flex-shrink: 0;
+    padding: 10px 14px;
+    font-size: 0.82rem;
   }
   .ev-toolbar__actions {
     flex-direction: column;
@@ -626,6 +648,13 @@
   }
   .ev-search-wrap {
     width: 100%;
+  }
+  .ev-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .ev-card {
+    border-radius: 16px;
   }
   .ev-form-grid {
     grid-template-columns: 1fr;
