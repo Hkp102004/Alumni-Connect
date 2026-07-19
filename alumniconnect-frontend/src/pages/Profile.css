@@ -78,7 +78,7 @@
   opacity: 0;
   cursor: pointer;
   transition: opacity 0.2s ease;
-  backdrop-filter: blur(2px);
+  background: rgba(15, 23, 42, 0.75);
 }
 
 .profile-sidebar__avatar-wrap:hover .profile-sidebar__avatar-upload-btn {
@@ -711,8 +711,7 @@
   justify-content: center;
   gap: 4px;
   padding: 4px;
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.85);
   transition: opacity 0.2s ease;
   border-radius: 0 0 50% 50%;
 }

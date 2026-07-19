@@ -8,6 +8,32 @@ const generateToken = (id) => {
   });
 };
 
+// Returns full user profile payload (used by all auth responses)
+function userPayload(user, jwtToken) {
+  return {
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    batch: user.batch || '',
+    branch: user.branch || '',
+    company: user.company || '',
+    designation: user.designation || '',
+    location: user.location || '',
+    bio: user.bio || '',
+    skills: user.skills || [],
+    avatarUrl: user.avatarUrl || '',
+    resumeUrl: user.resumeUrl || '',
+    resumeName: user.resumeName || '',
+    linkedinUrl: user.linkedinUrl || '',
+    githubUrl: user.githubUrl || '',
+    phone: user.phone || '',
+    isMentor: user.isMentor || false,
+    mentorExpertise: user.mentorExpertise || [],
+    token: jwtToken,
+  };
+}
+
 // @route  POST /api/auth/register
 const registerUser = async (req, res) => {
   try {
@@ -24,13 +50,7 @@ const registerUser = async (req, res) => {
 
     const user = await User.create({ name, email, password, role, batch, branch, company });
 
-    res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      token: generateToken(user._id),
-    });
+    res.status(201).json(userPayload(user, generateToken(user._id)));
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -51,13 +71,7 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      token: generateToken(user._id),
-    });
+    res.json(userPayload(user, generateToken(user._id)));
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -98,13 +112,7 @@ const firebaseLogin = async (req, res) => {
       });
     }
 
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      token: generateToken(user._id),
-    });
+    res.json(userPayload(user, generateToken(user._id)));
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -126,13 +134,7 @@ const firebaseRegister = async (req, res) => {
 
     let user = await User.findOne({ email: decoded.email });
     if (user) {
-      return res.status(200).json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        token: generateToken(user._id),
-      });
+      return res.status(200).json(userPayload(user, generateToken(user._id)));
     }
 
     const randomPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10);
@@ -146,13 +148,7 @@ const firebaseRegister = async (req, res) => {
       company
     });
 
-    res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      token: generateToken(user._id),
-    });
+    res.status(201).json(userPayload(user, generateToken(user._id)));
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

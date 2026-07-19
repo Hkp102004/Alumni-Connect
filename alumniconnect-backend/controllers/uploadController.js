@@ -102,7 +102,7 @@ const uploadDocument = async (req, res) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder,
-        resource_type: 'raw',
+        resource_type: 'auto',
         public_id: `${Date.now()}_${originalName}`,
       },
       (error, result) => {
