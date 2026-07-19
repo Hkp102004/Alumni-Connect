@@ -66,9 +66,12 @@ export function AuthProvider({ children }) {
       .get('/auth/me')
       .then((res) => setUser(res.data))
       .catch((err) => {
+        // Only clear token on actual auth failures (401/403), not network errors
         if (err.response?.status === 401 || err.response?.status === 403) {
           localStorage.removeItem('ac_token');
         }
+        // Network errors are silently ignored — user stays "logged out" UI
+        // but token is preserved for retry on next navigation
       })
       .finally(() => setLoading(false));
   }, []);

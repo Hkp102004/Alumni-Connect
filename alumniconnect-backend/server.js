@@ -16,15 +16,15 @@ connectDB();
 
 const app = express();
 
+// COOP header for Firebase Google popup auth compatibility
 app.use((req, res, next) => {
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
   next();
 });
 
-// Dynamic CORS allowing localhost (any port) and production origins seamlessly
+// Dynamic CORS — reflects any incoming origin (supports localhost:any-port + production)
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow all origins dynamically (reflects incoming origin header for localhost & production)
     callback(null, true);
   },
   credentials: true,
@@ -59,7 +59,22 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Something went wrong', error: err.message });
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+// Start server with EADDRINUSE fallback
+const PORT = parseInt(process.env.PORT, 10) || 5050;
+
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    const fallbackPort = PORT + 1;
+    console.warn(`⚠️  Port ${PORT} is in use, trying port ${fallbackPort}...`);
+    app.listen(fallbackPort, () => {
+      console.log(`Server running on port ${fallbackPort}`);
+    });
+  } else {
+    console.error('Server error:', err);
+    process.exit(1);
+  }
 });
