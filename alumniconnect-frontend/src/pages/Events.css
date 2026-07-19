@@ -777,3 +777,26 @@
     padding: 20px 24px 24px;
   }
 }
+
+@media (max-width: 480px) {
+  .ev-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .ev-card__date-pill {
+    width: auto;
+    font-size: 0.76rem;
+  }
+  .ev-card__footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .ev-card__attendees {
+    justify-content: flex-start;
+  }
+  .ev-btn--sm {
+    width: 100%;
+  }
+}

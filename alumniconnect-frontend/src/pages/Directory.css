@@ -859,3 +859,16 @@
     border-radius: 20px;
   }
 }
+
+@media (max-width: 480px) {
+  .dir-respond-row {
+    flex-direction: column;
+    width: 100%;
+  }
+  .dir-respond-row .dir-card__cta {
+    width: 100%;
+  }
+  .dir-modal-action-btn {
+    width: 100%;
+  }
+}
