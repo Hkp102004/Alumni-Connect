@@ -690,20 +690,20 @@
     font-size: 2.1rem;
   }
   .op-hero__stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     width: 100%;
-    justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
   }
   .op-stat {
-    flex: 1;
     min-width: 0;
-    padding: 12px 8px;
+    padding: 10px 4px;
   }
   .op-stat__number {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
   }
   .op-stat__label {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
   }
   .op-toolbar {
     flex-direction: column;
