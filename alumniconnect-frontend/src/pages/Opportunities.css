@@ -387,12 +387,20 @@
 }
 
 .op-card__meta-item {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 6px;
   font-size: 0.86rem;
   color: var(--text-dim);
   font-weight: 550;
+  max-width: 100%;
+}
+
+.op-card__meta-item span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
 }
 
 .op-card__meta-icon {

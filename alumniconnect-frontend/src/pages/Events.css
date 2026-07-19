@@ -39,7 +39,7 @@
 .ev-hero__stats {
   display: flex;
   gap: 20px;
-  flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .ev-stat {
@@ -393,6 +393,14 @@
   font-size: 0.86rem;
   color: var(--text-dim);
   font-weight: 550;
+  max-width: 100%;
+}
+
+.ev-card__detail span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
 }
 
 .ev-card__detail-icon {
@@ -454,8 +462,12 @@
   height: 26px;
   border-radius: 50%;
   border: 2px solid var(--surface);
-  margin-right: -10px;
+  margin-left: -10px;
   object-fit: cover;
+}
+
+.ev-card__attendee-avatar:first-child {
+  margin-left: 0;
 }
 
 .ev-card__attendee-avatar-more {
@@ -470,6 +482,7 @@
   align-items: center;
   justify-content: center;
   border: 2px solid var(--surface);
+  margin-left: -10px;
 }
 
 /* ===== Empty State ===== */
