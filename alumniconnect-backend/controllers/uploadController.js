@@ -9,15 +9,24 @@ const uploadImage = async (req, res) => {
       return res.status(400).json({ message: 'No image file provided' });
     }
 
-    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+    if (!cloudName || !apiKey || !apiSecret) {
       return res.status(500).json({
-        message: 'Cloudinary credentials are missing in server environment variables. Please add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET to backend .env.',
+        message: 'Cloudinary credentials missing on Render environment variables. Please verify CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.',
       });
     }
 
+    cloudinary.config({
+      cloud_name: cloudName,
+      api_key: apiKey,
+      api_secret: apiSecret,
+    });
+
     const folder = req.body.folder || 'alumniconnect';
 
-    // Upload using Cloudinary stream
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder: folder,
@@ -26,7 +35,10 @@ const uploadImage = async (req, res) => {
       (error, result) => {
         if (error) {
           console.error('Cloudinary upload error:', error);
-          return res.status(500).json({ message: 'Failed to upload image to Cloudinary', error: error.message });
+          return res.status(500).json({
+            message: `Cloudinary error: ${error.message || 'Failed to upload image'}`,
+            error: error.message,
+          });
         }
         res.json({
           url: result.secure_url,
@@ -41,7 +53,7 @@ const uploadImage = async (req, res) => {
     uploadStream.end(req.file.buffer);
   } catch (error) {
     console.error('Upload error:', error);
-    res.status(500).json({ message: 'Server error during file upload', error: error.message });
+    res.status(500).json({ message: `Server upload error: ${error.message}`, error: error.message });
   }
 };
 
