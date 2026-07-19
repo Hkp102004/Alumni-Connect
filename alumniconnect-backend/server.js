@@ -10,6 +10,7 @@ const connectionRoutes = require('./routes/connectionRoutes');
 const mentorshipRoutes = require('./routes/mentorshipRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const opportunityRoutes = require('./routes/opportunityRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 connectDB();
 
@@ -30,6 +31,7 @@ app.use('/api/connections', connectionRoutes);
 app.use('/api/mentorships', mentorshipRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/opportunities', opportunityRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // 404 handler
 app.use((req, res) => {

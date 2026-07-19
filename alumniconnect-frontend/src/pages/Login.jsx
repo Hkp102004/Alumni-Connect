@@ -218,7 +218,7 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="airbnb-login-form">
               <div className="stacked-input-group">
                 <input
-                  className="stacked-inputstacked-top"
+                  className="stacked-input stacked-top"
                   type="email"
                   name="email"
                   placeholder="Email address"
@@ -227,7 +227,7 @@ export default function Login() {
                   required
                 />
                 <input
-                  className="stacked-inputstacked-bottom"
+                  className="stacked-input stacked-bottom"
                   type="password"
                   name="password"
                   placeholder="Password"
@@ -290,7 +290,7 @@ export default function Login() {
                 </p>
                 <div className="stacked-input-group">
                   <input
-                    className="stacked-inputstacked-top"
+                    className="stacked-input"
                     type="email"
                     placeholder="Email address"
                     value={resetEmail}

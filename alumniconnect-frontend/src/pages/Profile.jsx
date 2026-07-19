@@ -29,12 +29,40 @@ export default function Profile() {
 
   const [saved,          setSaved]         = useState(false);
   const [saving,         setSaving]        = useState(false);
+  const [uploadingAvatar,setUploadingAvatar]= useState(false);
   const [error,          setError]         = useState('');
   const [activeSection,  setActiveSection] = useState('overview');
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm({ ...form, [name]: type === 'checkbox' ? checked : value });
+  };
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingAvatar(true);
+    setError('');
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const res = await api.post('/upload/image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const newAvatarUrl = res.data.url;
+      setForm((prev) => ({ ...prev, avatarUrl: newAvatarUrl }));
+      const updatedUserRes = await api.put('/users/me', { avatarUrl: newAvatarUrl });
+      setUser(updatedUserRes.data);
+      setSaved(true);
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || 'Failed to upload image to Cloudinary.');
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -128,6 +156,20 @@ export default function Profile() {
           {/* Avatar (above card, overlapping banner) */}
           <div className="profile-sidebar__avatar-wrap">
             <img src={avatarSrc} alt={form.name} className="profile-sidebar__avatar" />
+            <label className="profile-sidebar__avatar-upload-btn" title="Upload new photo to Cloudinary">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                disabled={uploadingAvatar}
+                style={{ display: 'none' }}
+              />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+              <span>{uploadingAvatar ? 'Uploading...' : 'Change'}</span>
+            </label>
           </div>
 
           {/* White card */}

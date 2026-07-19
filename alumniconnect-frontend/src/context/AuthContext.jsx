@@ -9,6 +9,49 @@ import { fetchSignInMethodsForEmail, linkWithCredential, EmailAuthProvider } fro
 
 const AuthContext = createContext(null);
 
+export function getAuthErrorMessage(err) {
+  if (!err) return 'An unexpected error occurred. Please try again.';
+
+  if (err.response?.data?.message) {
+    return err.response.data.message;
+  }
+
+  const code = err.code || (typeof err.message === 'string' && err.message.match(/\((auth\/[^)]+)\)/)?.[1]);
+
+  switch (code) {
+    case 'auth/email-already-in-use':
+      return 'An account with this email address already exists. Please log in instead.';
+    case 'auth/invalid-email':
+      return 'Please enter a valid email address.';
+    case 'auth/user-not-found':
+      return 'No account found with this email address.';
+    case 'auth/wrong-password':
+    case 'auth/invalid-credential':
+      return 'Incorrect email or password. Please check your credentials and try again.';
+    case 'auth/weak-password':
+      return 'Password is too weak. Please use at least 6 characters.';
+    case 'auth/popup-closed-by-user':
+      return 'Google sign-in popup was closed before completing.';
+    case 'auth/popup-blocked':
+      return 'Sign-in popup was blocked by your browser. Please allow popups for this site.';
+    case 'auth/too-many-requests':
+      return 'Too many failed attempts. Access to this account has been temporarily disabled. Try again later.';
+    case 'auth/network-request-failed':
+      return 'Network error. Please check your internet connection.';
+    case 'auth/account-exists-with-different-credential':
+      return 'An account already exists with the same email using a different sign-in method.';
+    default:
+      if (err.message && typeof err.message === 'string') {
+        const cleanMessage = err.message
+          .replace(/^Firebase:\s*/i, '')
+          .replace(/\s*\(auth\/[^)]+\)\.?$/i, '')
+          .trim();
+        return cleanMessage || 'Authentication failed. Please try again.';
+      }
+      return 'Authentication failed. Please try again.';
+  }
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -37,7 +80,6 @@ export function AuthProvider({ children }) {
       setUser(res.data);
       return res.data;
     } catch (err) {
-      // Check if user exists but signed up with Google only
       if (
         err.code === 'auth/wrong-password' ||
         err.code === 'auth/invalid-credential' ||
@@ -46,40 +88,51 @@ export function AuthProvider({ children }) {
         try {
           const methods = await fetchSignInMethodsForEmail(auth, email);
           if (methods.includes('google.com') && !methods.includes('password')) {
-            throw new Error('This email is linked to Google Sign-In. Please use the "Continue with Google" button below.');
+            throw new Error('This email is linked to Google Sign-In. Please use the "Continue with Google" button.');
           }
         } catch (checkErr) {
-          if (checkErr.message.includes('Google Sign-In')) throw checkErr;
-          // If fetchSignInMethods also fails, fall through
+          if (checkErr.message.includes('Google Sign-In')) {
+            throw checkErr;
+          }
         }
       }
-      throw err;
+      throw new Error(getAuthErrorMessage(err));
     }
   };
 
   const loginWithGoogle = async (role) => {
-    const result = await signInWithPopup(auth, googleProvider);
-    const firebaseIdToken = await result.user.getIdToken();
-    const res = await api.post('/auth/firebase-login', { token: firebaseIdToken, role });
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const firebaseIdToken = await result.user.getIdToken();
+      const res = await api.post('/auth/firebase-login', { token: firebaseIdToken, role });
 
-    // Backend signals that this is a new user and needs a role selection
-    if (res.status === 202 && res.data?.needsRole) {
-      const err = new Error('NEEDS_ROLE');
-      err.needsRole = true;
-      err.firebaseIdToken = firebaseIdToken;
-      throw err;
+      // Backend signals that this is a new user and needs a role selection
+      if (res.status === 202 && res.data?.needsRole) {
+        const err = new Error('NEEDS_ROLE');
+        err.needsRole = true;
+        err.firebaseIdToken = firebaseIdToken;
+        throw err;
+      }
+
+      localStorage.setItem('ac_token', res.data.token);
+      setUser(res.data);
+      return res.data;
+    } catch (err) {
+      if (err.needsRole) throw err;
+      throw new Error(getAuthErrorMessage(err));
     }
-
-    localStorage.setItem('ac_token', res.data.token);
-    setUser(res.data);
-    return res.data;
   };
 
   const loginWithGoogleAndRole = async (firebaseIdToken, role, batch) => {
-    const res = await api.post('/auth/firebase-login', { token: firebaseIdToken, role, batch });
-    localStorage.setItem('ac_token', res.data.token);
-    setUser(res.data);
-    return res.data;
+    try {
+      const res = await api.post('/auth/firebase-login', { token: firebaseIdToken, role, batch });
+      localStorage.setItem('ac_token', res.data.token);
+      setUser(res.data);
+      return res.data;
+    } catch (err) {
+      throw new Error(getAuthErrorMessage(err));
+    }
+  };
   };
 
   const register = async (payload) => {
@@ -98,12 +151,10 @@ export function AuthProvider({ children }) {
       setUser(res.data);
       return res.data;
     } catch (err) {
-      // If user already signed up with Google, link email/password to existing account
       if (err.code === 'auth/email-already-in-use') {
         try {
           const methods = await fetchSignInMethodsForEmail(auth, payload.email);
           if (methods.includes('google.com')) {
-            // Sign in with Google first, then link email/password
             const googleResult = await signInWithPopup(auth, googleProvider);
             const credential = EmailAuthProvider.credential(payload.email, payload.password);
             await linkWithCredential(googleResult.user, credential);
@@ -123,8 +174,9 @@ export function AuthProvider({ children }) {
         } catch (linkErr) {
           throw new Error('This email is already registered. Try logging in instead.');
         }
+        throw new Error('An account with this email address already exists. Try logging in instead.');
       }
-      throw err;
+      throw new Error(getAuthErrorMessage(err));
     }
   };
 
@@ -139,15 +191,19 @@ export function AuthProvider({ children }) {
   };
 
   const resetPassword = async (email) => {
-    // Check what providers the email is linked to
-    const methods = await fetchSignInMethodsForEmail(auth, email);
-    if (methods.length === 0) {
-      throw new Error('No account found with this email address.');
+    try {
+      try {
+        const methods = await fetchSignInMethodsForEmail(auth, email);
+        if (methods.length > 0 && methods.includes('google.com') && !methods.includes('password')) {
+          throw new Error('This account uses Google Sign-In and has no password. Please use the "Continue with Google" button to log in.');
+        }
+      } catch (checkErr) {
+        if (checkErr.message.includes('Google Sign-In')) throw checkErr;
+      }
+      await sendPasswordResetEmail(auth, email);
+    } catch (err) {
+      throw new Error(getAuthErrorMessage(err));
     }
-    if (methods.includes('google.com') && !methods.includes('password')) {
-      throw new Error('This account uses Google Sign-In and has no password. Please use the "Continue with Google" button to log in.');
-    }
-    await sendPasswordResetEmail(auth, email);
   };
 
   return (
@@ -158,4 +214,5 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
+
 
